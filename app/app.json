@@ -18,6 +18,22 @@
       },
       "package": "com.sentinel.app"
     },
-    "scheme": "sentinel"
+    "scheme": "sentinel",
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "895fb961-bf61-45e4-b1b2-5b0f885f5470"
+      }
+    },
+    "owner": "gt-ai",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/895fb961-bf61-45e4-b1b2-5b0f885f5470"
+    }
   }
 }
