@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Sentinel",
+    "slug": "sentinel",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#080808"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sentinel.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#080808"
+      },
+      "package": "com.sentinel.app"
+    },
+    "scheme": "sentinel"
+  }
+}
