@@ -15,6 +15,8 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
   const halo1Op     = useRef(new Animated.Value(0.5)).current;
   const halo2Op     = useRef(new Animated.Value(0.25)).current;
   const threatPulse = useRef(new Animated.Value(1)).current;
+  const eyeOp       = useRef(new Animated.Value(1)).current;
+  const haloMute    = useRef(new Animated.Value(1)).current;
 
   // Eye animations
   const eyeStateH   = useRef(new Animated.Value(1)).current;
@@ -83,7 +85,8 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
 
     switch (state) {
       case 'idle': {
-        // Big round eyes — open, alert
+        Animated.timing(eyeOp,    { toValue: 1, duration: 350, useNativeDriver: true }).start();
+        Animated.timing(haloMute, { toValue: 1, duration: 500, useNativeDriver: true }).start();
         Animated.spring(eyeStateH,   { toValue: 1.0, useNativeDriver: true, tension: 60 }).start();
         Animated.spring(leftRotate,  { toValue: 0,   useNativeDriver: true }).start();
         Animated.spring(rightRotate, { toValue: 0,   useNativeDriver: true }).start();
@@ -92,7 +95,8 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
         break;
       }
       case 'family': {
-        // Happy dome squint — eyeCircle dims + flat-bottom arch
+        Animated.timing(eyeOp,    { toValue: 1, duration: 350, useNativeDriver: true }).start();
+        Animated.timing(haloMute, { toValue: 1, duration: 500, useNativeDriver: true }).start();
         Animated.spring(eyeStateH,   { toValue: 0.45, useNativeDriver: true, tension: 55, friction: 9 }).start();
         Animated.spring(leftRotate,  { toValue: 0,    useNativeDriver: true }).start();
         Animated.spring(rightRotate, { toValue: 0,    useNativeDriver: true }).start();
@@ -101,7 +105,8 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
         break;
       }
       case 'unknown': {
-        // Horizontal oval scanning
+        Animated.timing(eyeOp,    { toValue: 1, duration: 350, useNativeDriver: true }).start();
+        Animated.timing(haloMute, { toValue: 1, duration: 500, useNativeDriver: true }).start();
         Animated.spring(eyeStateH,   { toValue: 1.0, useNativeDriver: true }).start();
         Animated.spring(leftRotate,  { toValue: 0,   useNativeDriver: true }).start();
         Animated.spring(rightRotate, { toValue: 0,   useNativeDriver: true }).start();
@@ -116,7 +121,8 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
         return () => { scan.stop(); eyeScanX.setValue(0); };
       }
       case 'threat': {
-        // Angry: inner corners tilt DOWN toward nose (furrowed brow)
+        Animated.timing(eyeOp,    { toValue: 1, duration: 350, useNativeDriver: true }).start();
+        Animated.timing(haloMute, { toValue: 1, duration: 500, useNativeDriver: true }).start();
         Animated.spring(eyeStateH,   { toValue: 1.3,  useNativeDriver: true, tension: 140, friction: 6 }).start();
         Animated.spring(leftRotate,  { toValue: 0.65, useNativeDriver: true, tension: 100 }).start();
         Animated.spring(rightRotate, { toValue: -0.65, useNativeDriver: true, tension: 100 }).start();
@@ -129,7 +135,9 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
         return () => { pulse.stop(); threatPulse.setValue(1); };
       }
       case 'privacy': {
-        // Closed — thin slits
+        // No eyes, no halos — deep black orb
+        Animated.timing(eyeOp,    { toValue: 0, duration: 350, useNativeDriver: true }).start();
+        Animated.timing(haloMute, { toValue: 0, duration: 500, useNativeDriver: true }).start();
         Animated.spring(eyeStateH,   { toValue: 0.07, useNativeDriver: true }).start();
         Animated.spring(leftRotate,  { toValue: 0,    useNativeDriver: true }).start();
         Animated.spring(rightRotate, { toValue: 0,    useNativeDriver: true }).start();
@@ -176,7 +184,7 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
         borderRadius: outer / 2,
         borderWidth: 1,
         borderColor: glow,
-        opacity: halo1Op,
+        opacity: Animated.multiply(halo1Op, haloMute),
       }} />
       <Animated.View style={{
         position: 'absolute',
@@ -184,7 +192,7 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
         borderRadius: inner / 2,
         borderWidth: 1,
         borderColor: glow,
-        opacity: halo2Op,
+        opacity: Animated.multiply(halo2Op, haloMute),
       }} />
       <Animated.View style={{
         transform: [{ scale: Animated.multiply(breathe, threatPulse) }],
@@ -204,6 +212,7 @@ export const Orb: React.FC<OrbProps> = ({ state, size = 150, lookUp = false }) =
             flexDirection: 'row',
             gap: eyeGap,
             marginTop: eyeMarginTop,
+            opacity: eyeOp,
             transform: [{ translateY: eyeLookY }],
           }}>
             {/* Left eye */}

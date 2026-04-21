@@ -31,7 +31,7 @@ export const ORB_GRADIENT: Record<string, readonly [string, string, string, stri
   family:  ['#1cffa0', '#009960', '#001a0e', '#050e08'],
   unknown: ['#ffb46c', '#aa5500', '#1a0d00', '#0e0800'],
   threat:  ['#ff5577', '#aa0022', '#1a0008', '#0e0005'],
-  privacy: ['#555555', '#333333', '#1a1a1a', '#0a0a0a'],
+  privacy: ['#2a2a2a', '#151515', '#0a0a0a', '#050505'],
 };
 
 export const ORB_GLOW: Record<string, string> = {

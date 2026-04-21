@@ -360,6 +360,8 @@ export const HomeScreen: React.FC = () => {
     ]).start();
     const isEnabling = !privacyMode;
     togglePrivacy();
+    if (isEnabling && armed) toggleArmed();
+    if (!isEnabling && !armed) toggleArmed();
     setOrbLookUp(true);
     setTimeout(() => setOrbLookUp(false), 2500);
     if (isEnabling) {
@@ -411,14 +413,14 @@ export const HomeScreen: React.FC = () => {
           <Animated.View style={{ transform: [{ scale: privScale }] }}>
             <TouchableOpacity
               style={[styles.navBtn, privacyMode
-                ? { borderColor: `${col.orange}55`, backgroundColor: isDark ? 'rgba(20,10,0,0.90)' : 'rgba(0,0,0,0.80)' }
-                : { borderColor: col.border2, backgroundColor: isDark ? col.s2 : 'rgba(0,0,0,0.07)' }
+                ? { borderColor: `${col.text}25`, backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)' }
+                : { borderColor: `${col.orange}55`, backgroundColor: isDark ? 'rgba(20,10,0,0.90)' : 'rgba(80,30,0,0.85)' }
               ]}
               onPress={handlePrivacy}
               activeOpacity={0.75}
             >
-              <Ionicons name={privacyMode ? 'eye-off' : 'eye-outline'} size={14} color={privacyMode ? col.orange : col.t3} />
-              <Text style={[styles.navBtnText, { color: privacyMode ? col.orange : col.t3 }]}>
+              <Ionicons name={privacyMode ? 'eye-off' : 'eye-outline'} size={14} color={privacyMode ? col.t2 : col.orange} />
+              <Text style={[styles.navBtnText, { color: privacyMode ? col.t2 : col.orange }]}>
                 {privacyMode ? 'Private' : 'Cameras'}
               </Text>
             </TouchableOpacity>
@@ -466,9 +468,11 @@ export const HomeScreen: React.FC = () => {
           {/* State label */}
           <Text style={[styles.stateLabel, { color: stateColor }]}>{stateLabel}</Text>
           <Text style={[styles.stateSub, { color: col.t2 }]}>
-            {homeMembers.length > 0
-              ? `${homeMembers.map(m => m.name).join(' · ')} home`
-              : 'Home is empty — monitoring all entry points'}
+            {orbState === 'privacy'
+              ? 'Your home is private · All cameras off'
+              : homeMembers.length > 0
+                ? `${homeMembers.map(m => m.name).join(' · ')} home`
+                : 'Home is empty — monitoring all entry points'}
           </Text>
 
           {/* Household members */}
