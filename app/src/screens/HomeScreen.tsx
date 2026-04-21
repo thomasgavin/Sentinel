@@ -172,7 +172,11 @@ const AnimatedEventRow: React.FC<{
 // ── HOME SCREEN ────────────────────────────────────────────────────────────
 
 export const HomeScreen: React.FC = () => {
-  const { orbState, events, household, cameras, armed, toggleArmed, setOrbState, toggleCamera, banner, isDark } = useStore();
+  const {
+    orbState, events, household, cameras, armed, privacyMode,
+    toggleArmed, togglePrivacy, setOrbState, toggleCamera,
+    banner, isDark, showBanner, hideBanner, addEvent,
+  } = useStore();
   const col = getColors(isDark);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -198,6 +202,7 @@ export const HomeScreen: React.FC = () => {
   const recentFeed  = events.slice(0, 8);
 
   const armScale   = useRef(new Animated.Value(1)).current;
+  const privScale  = useRef(new Animated.Value(1)).current;
   const scanY      = useRef(new Animated.Value(0)).current;
   const borderGlow = useRef(new Animated.Value(0.3)).current;
   const stateFlash = useRef(new Animated.Value(0)).current;
@@ -308,12 +313,68 @@ export const HomeScreen: React.FC = () => {
     { label: 'Privacy mode',   state: 'privacy', color: C.t2     },
   ];
 
+  const fireSystemBanner = (title: string, body: string, prefix: string) => {
+    const e: SentinelEvent = {
+      id: `sys-${prefix}-${Date.now()}`,
+      type: 'system',
+      title,
+      body,
+      time: new Date(),
+      camera: 'System',
+      severity: 'info',
+      resolved: true,
+    };
+    addEvent(e);
+    showBanner(e);
+    setTimeout(() => hideBanner(), 4500);
+  };
+
   const handleArm = () => {
     Animated.sequence([
       Animated.timing(armScale, { toValue: 0.88, duration: 65,  useNativeDriver: true }),
       Animated.timing(armScale, { toValue: 1,    duration: 130, useNativeDriver: true }),
     ]).start();
+    const isArming = !armed;
     toggleArmed();
+    setOrbLookUp(true);
+    setTimeout(() => setOrbLookUp(false), 2500);
+    if (isArming) {
+      fireSystemBanner(
+        'System Armed · All entry points monitored',
+        'Sentinel is actively watching all cameras and sensors.',
+        'arm',
+      );
+    } else {
+      fireSystemBanner(
+        'System Disarmed · Alerts paused',
+        'Security monitoring has been suspended.',
+        'disarm',
+      );
+    }
+  };
+
+  const handlePrivacy = () => {
+    Animated.sequence([
+      Animated.timing(privScale, { toValue: 0.88, duration: 65,  useNativeDriver: true }),
+      Animated.timing(privScale, { toValue: 1,    duration: 130, useNativeDriver: true }),
+    ]).start();
+    const isEnabling = !privacyMode;
+    togglePrivacy();
+    setOrbLookUp(true);
+    setTimeout(() => setOrbLookUp(false), 2500);
+    if (isEnabling) {
+      fireSystemBanner(
+        'Privacy Mode On · All cameras paused',
+        'Cameras are off. Sentinel is in passive standby.',
+        'priv-on',
+      );
+    } else {
+      fireSystemBanner(
+        'Privacy Mode Off · Cameras resumed',
+        'All cameras are back online and monitoring.',
+        'priv-off',
+      );
+    }
   };
 
   const FEED_H = 340;
@@ -346,21 +407,39 @@ export const HomeScreen: React.FC = () => {
           }]} />
           <Text style={[styles.navTitle, { color: col.text }]}>SENTINEL</Text>
         </TouchableOpacity>
-        <Animated.View style={{ transform: [{ scale: armScale }] }}>
-          <TouchableOpacity
-            style={[styles.armBtn, armed
-              ? { borderColor: `${C.green}55`, backgroundColor: 'rgba(4,10,6,0.90)' }
-              : { borderColor: col.border2, backgroundColor: isDark ? col.s2 : 'rgba(0,0,0,0.07)' }
-            ]}
-            onPress={handleArm}
-            activeOpacity={0.75}
-          >
-            <Ionicons name={armed ? 'shield-checkmark' : 'shield-outline'} size={15} color={armed ? C.green : col.t2} />
-            <Text style={[styles.armText, { color: armed ? C.green : col.t2 }]}>
-              {armed ? 'Armed' : 'Disarmed'}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+        <View style={styles.navButtons}>
+          <Animated.View style={{ transform: [{ scale: privScale }] }}>
+            <TouchableOpacity
+              style={[styles.navBtn, privacyMode
+                ? { borderColor: `${col.t2}55`, backgroundColor: isDark ? 'rgba(10,10,18,0.90)' : 'rgba(0,0,0,0.80)' }
+                : { borderColor: col.border2, backgroundColor: isDark ? col.s2 : 'rgba(0,0,0,0.07)' }
+              ]}
+              onPress={handlePrivacy}
+              activeOpacity={0.75}
+            >
+              <Ionicons name={privacyMode ? 'eye-off' : 'eye-outline'} size={14} color={privacyMode ? col.t2 : col.t3} />
+              <Text style={[styles.navBtnText, { color: privacyMode ? col.t2 : col.t3 }]}>
+                {privacyMode ? 'Private' : 'Cameras'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View style={{ transform: [{ scale: armScale }] }}>
+            <TouchableOpacity
+              style={[styles.navBtn, armed
+                ? { borderColor: `${C.green}55`, backgroundColor: 'rgba(4,10,6,0.90)' }
+                : { borderColor: col.border2, backgroundColor: isDark ? col.s2 : 'rgba(0,0,0,0.07)' }
+              ]}
+              onPress={handleArm}
+              activeOpacity={0.75}
+            >
+              <Ionicons name={armed ? 'shield-checkmark' : 'shield-outline'} size={14} color={armed ? C.green : col.t2} />
+              <Text style={[styles.navBtnText, { color: armed ? C.green : col.t2 }]}>
+                {armed ? 'Armed' : 'Disarmed'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       </View>
 
       <ScrollView
@@ -624,14 +703,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
   },
-  navLeft:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  navOrb:   { width: 12, height: 12, borderRadius: 6, shadowRadius: 8, shadowOpacity: 1, shadowOffset: { width: 0, height: 0 } },
-  navTitle: { color: C.text, fontSize: 18, fontWeight: '900', letterSpacing: 2.5 },
-  armBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1,
+  navLeft:    { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  navOrb:     { width: 12, height: 12, borderRadius: 6, shadowRadius: 8, shadowOpacity: 1, shadowOffset: { width: 0, height: 0 } },
+  navTitle:   { color: C.text, fontSize: 18, fontWeight: '900', letterSpacing: 2.5 },
+  navButtons: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  navBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, borderWidth: 1,
   },
-  armText: { fontSize: 14, fontWeight: '700' },
+  navBtnText: { fontSize: 12, fontWeight: '700' },
 
   scroll:  { flex: 1 },
   content: { paddingHorizontal: 16, gap: 16, paddingTop: 16 },
