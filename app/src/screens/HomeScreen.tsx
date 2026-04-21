@@ -411,14 +411,14 @@ export const HomeScreen: React.FC = () => {
           <Animated.View style={{ transform: [{ scale: privScale }] }}>
             <TouchableOpacity
               style={[styles.navBtn, privacyMode
-                ? { borderColor: `${col.t2}55`, backgroundColor: isDark ? 'rgba(10,10,18,0.90)' : 'rgba(0,0,0,0.80)' }
+                ? { borderColor: `${col.orange}55`, backgroundColor: isDark ? 'rgba(20,10,0,0.90)' : 'rgba(0,0,0,0.80)' }
                 : { borderColor: col.border2, backgroundColor: isDark ? col.s2 : 'rgba(0,0,0,0.07)' }
               ]}
               onPress={handlePrivacy}
               activeOpacity={0.75}
             >
-              <Ionicons name={privacyMode ? 'eye-off' : 'eye-outline'} size={14} color={privacyMode ? col.t2 : col.t3} />
-              <Text style={[styles.navBtnText, { color: privacyMode ? col.t2 : col.t3 }]}>
+              <Ionicons name={privacyMode ? 'eye-off' : 'eye-outline'} size={14} color={privacyMode ? col.orange : col.t3} />
+              <Text style={[styles.navBtnText, { color: privacyMode ? col.orange : col.t3 }]}>
                 {privacyMode ? 'Private' : 'Cameras'}
               </Text>
             </TouchableOpacity>
