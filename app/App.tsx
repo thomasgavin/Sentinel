@@ -3,7 +3,7 @@ import { StatusBar, View, Text, ScrollView, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -64,6 +64,7 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
 function TabNavigator() {
   const { unreadCount, isDark } = useStore();
   const col = getColors(isDark);
+  const insets = useSafeAreaInsets();
 
   const navTheme = {
     ...DefaultTheme,
@@ -88,8 +89,8 @@ function TabNavigator() {
             borderTopColor:  col.border,
             borderTopWidth:  1,
             elevation: 0,
-            height: Platform.OS === 'web' ? 52 : 56,
-            paddingBottom: 6,
+            height: Platform.OS === 'web' ? 52 : 56 + insets.bottom,
+            paddingBottom: insets.bottom + 4,
             paddingTop: 6,
           },
           tabBarActiveTintColor:   col.accent,

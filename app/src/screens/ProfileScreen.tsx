@@ -49,10 +49,10 @@ export const ProfileScreen: React.FC = () => {
                 </View>
                 <View style={styles.memberInfo}>
                   <View style={styles.memberTop}>
-                    <Text style={styles.memberName}>{member.name}</Text>
+                    <Text style={[styles.memberName, { color: col.text }]}>{member.name}</Text>
                     <View style={[
                       styles.statusBadge,
-                      member.status === 'home' ? styles.statusHome : styles.statusAway,
+                      member.status === 'home' ? styles.statusHome : [styles.statusAway, { backgroundColor: col.s3 }],
                     ]}>
                       <View style={[styles.statusDot, { backgroundColor: member.status === 'home' ? col.green : col.t3 }]} />
                       <Text style={[styles.statusText, { color: member.status === 'home' ? col.green : col.t3 }]}>
@@ -60,16 +60,16 @@ export const ProfileScreen: React.FC = () => {
                       </Text>
                     </View>
                   </View>
-                  <Text style={styles.memberRole}>{member.role}</Text>
-                  <Text style={styles.memberSeen}>
+                  <Text style={[styles.memberRole, { color: col.t2 }]}>{member.role}</Text>
+                  <Text style={[styles.memberSeen, { color: col.t3 }]}>
                     {member.status === 'home'
                       ? `Arrived ${relTime(member.lastSeen)}`
                       : `Last seen ${relTime(member.lastSeen)}`}
                   </Text>
                 </View>
                 <View style={styles.memberStats}>
-                  <Text style={styles.statNum}>{member.arrivals}</Text>
-                  <Text style={styles.statLabel}>arrivals</Text>
+                  <Text style={[styles.statNum, { color: col.text }]}>{member.arrivals}</Text>
+                  <Text style={[styles.statLabel, { color: col.t3 }]}>arrivals</Text>
                 </View>
               </View>
               {index < household.length - 1 && <View style={styles.divider} />}
