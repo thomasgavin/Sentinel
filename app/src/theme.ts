@@ -1,24 +1,29 @@
 export const C = {
-  bg:         '#080808',
-  s1:         '#0f0f0f',
-  s2:         '#161616',
-  s3:         '#1e1e1e',
-  s4:         '#252525',
-  border:     'rgba(255,255,255,0.06)',
-  border2:    'rgba(255,255,255,0.12)',
-  text:       '#ffffff',
-  t2:         '#888888',
-  t3:         '#444444',
+  bg:         '#060810',
+  s1:         '#0D1020',
+  s2:         '#141825',
+  s3:         '#1C2233',
+  s4:         '#242D44',
+  border:     'rgba(148,163,255,0.08)',
+  border2:    'rgba(148,163,255,0.15)',
+  text:       '#F0F4FF',
+  t2:         '#8892AA',
+  t3:         '#3D4560',
   accent:     '#00E5FF',
   accentDim:  'rgba(0,229,255,0.12)',
   green:      '#00FF87',
-  greenDim:   'rgba(0,255,135,0.12)',
+  greenDim:   'rgba(0,255,135,0.10)',
   orange:     '#FF8A3D',
-  orangeDim:  'rgba(255,138,61,0.15)',
+  orangeDim:  'rgba(255,138,61,0.12)',
   red:        '#FF3357',
-  redDim:     'rgba(255,51,87,0.15)',
+  redDim:     'rgba(255,51,87,0.12)',
   amber:      '#FFD166',
-  amberDim:   'rgba(255,209,102,0.15)',
+  amberDim:   'rgba(255,209,102,0.12)',
+  // Section tint backgrounds (very subtle color differentiation per section)
+  feedBg:     '#0C1318',   // teal tint for live feed card
+  statsBg:    '#0F0E1C',   // purple tint for stats card
+  chatBg:     '#120E18',   // warm tint for chat card
+  camBg:      '#0C1410',   // green tint for camera card
 } as const;
 
 export const ORB_GRADIENT: Record<string, readonly [string, string, string, string]> = {
@@ -46,7 +51,7 @@ export const STATE_COLOR: Record<string, string> = {
 };
 
 export const STATE_LABEL: Record<string, string> = {
-  idle:    'Monitoring · Secure',
+  idle:    'Nobody home · Monitoring',
   family:  'Family detected',
   unknown: 'Unknown person',
   threat:  'Threat detected',
@@ -92,3 +97,63 @@ export const MEMBER_COLOR: Record<string, string> = {
   emma:    C.amber,
   jake:    C.orange,
 };
+
+// ── LIGHT MODE PALETTE ────────────────────────────────────────────────────────
+
+export const CL = {
+  ...C,
+  bg:      '#ECF0FF',
+  s1:      '#FFFFFF',
+  s2:      '#F3F5FF',
+  s3:      '#E6E9F8',
+  s4:      '#D2D6EE',
+  border:  'rgba(13,16,50,0.07)',
+  border2: 'rgba(13,16,50,0.13)',
+  text:    '#080C1E',
+  t2:      '#3A4060',
+  t3:      '#8892AA',
+  // section tints — lighter, pastel-tinted whites
+  feedBg:  '#EAF5FF',
+  statsBg: '#F0EEFF',
+  chatBg:  '#FEF0FF',
+  camBg:   '#EDFFF5',
+} as const;
+
+export type ColorPalette = typeof C;
+
+export function getColors(isDark: boolean): ColorPalette {
+  return (isDark ? C : CL) as ColorPalette;
+}
+
+// Darker state colors for light mode (bright neons are unreadable on white bg)
+const STATE_COLOR_LIGHT: Record<string, string> = {
+  idle:    '#007A94',
+  family:  '#006B35',
+  unknown: '#B85C00',
+  threat:  '#C01030',
+  privacy: '#555555',
+};
+
+export function getStateColor(state: string, isDark: boolean): string {
+  return isDark
+    ? (STATE_COLOR[state] ?? C.accent)
+    : (STATE_COLOR_LIGHT[state] ?? '#007A94');
+}
+
+// Darker event colors for light mode
+const EVENT_COLOR_LIGHT: Record<string, string> = {
+  family_arrival:   '#006B35',
+  family_departure: '#505A70',
+  unknown_person:   '#B85C00',
+  package_delivery: '#007A94',
+  motion_resolved:  '#8892AA',
+  threat:           '#C01030',
+  system:           '#007A94',
+  daily_brief:      '#8A6000',
+};
+
+export function getEventColor(type: string, isDark: boolean): string {
+  return isDark
+    ? (EVENT_COLOR[type] ?? C.t2)
+    : (EVENT_COLOR_LIGHT[type] ?? '#505A70');
+}

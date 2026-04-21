@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../store';
 import { CameraCard } from '../components/CameraCard';
-import { C } from '../theme';
+import { C, getColors } from '../theme';
 
 export const FeedScreen: React.FC = () => {
-  const { cameras, armed, privacyMode, togglePrivacy } = useStore();
+  const { cameras, armed, privacyMode, togglePrivacy, isDark } = useStore();
+  const col = getColors(isDark);
   const insets = useSafeAreaInsets();
   const [layout, setLayout] = useState<'grid' | 'list'>('list');
   const [tick, setTick] = useState(0);
@@ -23,7 +24,7 @@ export const FeedScreen: React.FC = () => {
   const totalToday   = cameras.reduce((s, c) => s + c.detectionCount, 0);
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
+    <View style={[styles.root, { paddingTop: insets.top, backgroundColor: col.bg }]}>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -37,8 +38,8 @@ export const FeedScreen: React.FC = () => {
           style={[styles.privacyBtn, privacyMode && styles.privacyBtnOn]}
           onPress={togglePrivacy}
         >
-          <Ionicons name={privacyMode ? 'eye-off' : 'eye'} size={14} color={privacyMode ? C.t2 : C.accent} />
-          <Text style={[styles.privacyText, { color: privacyMode ? C.t2 : C.accent }]}>
+          <Ionicons name={privacyMode ? 'eye-off' : 'eye'} size={14} color={privacyMode ? col.t2 : col.accent} />
+          <Text style={[styles.privacyText, { color: privacyMode ? col.t2 : col.accent }]}>
             {privacyMode ? 'Privacy On' : 'Privacy Off'}
           </Text>
         </TouchableOpacity>

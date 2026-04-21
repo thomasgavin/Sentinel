@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../store';
 import { EventRow } from '../components/EventRow';
 import { SentinelEvent, EventType } from '../types';
-import { C, EVENT_COLOR, EVENT_ICON } from '../theme';
+import { C, getColors, EVENT_COLOR, EVENT_ICON } from '../theme';
 
 type FilterKey = 'all' | 'family' | 'visitors' | 'deliveries' | 'motion' | 'alerts';
 
@@ -22,7 +22,8 @@ const FILTERS: { key: FilterKey; label: string; types?: EventType[] }[] = [
 ];
 
 export const ActivityScreen: React.FC = () => {
-  const { events, clearUnread } = useStore();
+  const { events, clearUnread, isDark } = useStore();
+  const col = getColors(isDark);
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<FilterKey>('all');
 
@@ -38,27 +39,31 @@ export const ActivityScreen: React.FC = () => {
   const renderHeader = () => (
     <>
       {/* Page header */}
-      <View style={[styles.pageHeader, { paddingTop: insets.top + 4 }]}>
-        <Text style={styles.heading}>Activity</Text>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{events.length}</Text>
+      <View style={[styles.pageHeader, { paddingTop: insets.top + 4, borderBottomColor: col.border }]}>
+        <Text style={[styles.heading, { color: col.text }]}>Activity</Text>
+        <View style={[styles.countBadge, { backgroundColor: col.s3 }]}>
+          <Text style={[styles.countText, { color: col.t2 }]}>{events.length}</Text>
         </View>
       </View>
 
       {/* Filter chips */}
-      <View style={styles.filterScroll}>
+      <View style={[styles.filterScroll, { borderBottomColor: col.border }]}>
         {FILTERS.map(f => (
           <TouchableOpacity
             key={f.key}
-            style={[styles.chip, filter === f.key && styles.chipActive]}
+            style={[
+              styles.chip,
+              { backgroundColor: col.s2, borderColor: col.border },
+              filter === f.key && { backgroundColor: `${col.accent}18`, borderColor: `${col.accent}55` },
+            ]}
             onPress={() => setFilter(f.key)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.chipText, filter === f.key && styles.chipTextActive]}>
+            <Text style={[styles.chipText, { color: col.t2 }, filter === f.key && { color: col.accent }]}>
               {f.label}
             </Text>
             {f.key !== 'all' && (
-              <Text style={[styles.chipCount, filter === f.key && { color: C.accent }]}>
+              <Text style={[styles.chipCount, { color: col.t3 }, filter === f.key && { color: col.accent }]}>
                 {events.filter(e => f.types?.includes(e.type)).length}
               </Text>
             )}
@@ -67,7 +72,7 @@ export const ActivityScreen: React.FC = () => {
       </View>
 
       {/* Section date label */}
-      <Text style={styles.dateLabel}>
+      <Text style={[styles.dateLabel, { color: col.t2 }]}>
         Today · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
       </Text>
     </>
@@ -82,7 +87,7 @@ export const ActivityScreen: React.FC = () => {
   );
 
   return (
-    <View style={[styles.root]}>
+    <View style={[styles.root, { backgroundColor: col.bg }]}>
       <FlatList
         data={filtered}
         renderItem={renderItem}

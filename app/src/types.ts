@@ -42,6 +42,7 @@ export interface ChatMessage {
   text: string;
   time: Date;
   color?: 'cyan' | 'green' | 'orange' | 'red';
+  hasClip?: boolean;
 }
 
 export interface Camera {

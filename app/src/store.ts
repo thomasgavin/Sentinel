@@ -10,6 +10,7 @@ interface AppStore {
   chat: ChatMessage[];
   armed: boolean;
   privacyMode: boolean;
+  isDark: boolean;
   banner: { visible: boolean; event?: SentinelEvent };
   subscription: 'free' | 'home' | 'pro';
   unreadCount: number;
@@ -19,21 +20,24 @@ interface AppStore {
   addChatMessage: (m: ChatMessage) => void;
   updateMemberStatus: (id: string, status: 'home' | 'away', time?: Date) => void;
   setCameraMotion: (id: string, active: boolean, lastEvent?: string) => void;
+  toggleCamera: (id: string) => void;
   showBanner: (e: SentinelEvent) => void;
   hideBanner: () => void;
   toggleArmed: () => void;
   togglePrivacy: () => void;
+  toggleTheme: () => void;
   clearUnread: () => void;
 }
 
 export const useStore = create<AppStore>((set) => ({
-  orbState: 'idle',
+  orbState: HOUSEHOLD.some(m => m.status === 'home') ? 'family' : 'idle',
   events: INITIAL_EVENTS,
   household: HOUSEHOLD,
   cameras: CAMERAS,
   chat: INITIAL_CHAT,
   armed: true,
   privacyMode: false,
+  isDark: true,
   banner: { visible: false },
   subscription: 'home',
   unreadCount: 0,
@@ -77,10 +81,20 @@ export const useStore = create<AppStore>((set) => ({
       ),
     })),
 
+  toggleCamera: (id) =>
+    set((s) => ({
+      cameras: s.cameras.map((c) =>
+        c.id === id
+          ? { ...c, status: c.status === 'offline' ? 'active' : 'offline', motionActive: false }
+          : c
+      ),
+    })),
+
   showBanner: (e) => set({ banner: { visible: true, event: e } }),
   hideBanner: () => set({ banner: { visible: false } }),
 
   toggleArmed: () => set((s) => ({ armed: !s.armed })),
+  toggleTheme: () => set((s) => ({ isDark: !s.isDark })),
 
   togglePrivacy: () =>
     set((s) => ({

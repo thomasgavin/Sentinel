@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SentinelEvent } from '../types';
-import { C, EVENT_COLOR, EVENT_BG, EVENT_ICON } from '../theme';
+import { C, getColors, getEventColor, EVENT_BG, EVENT_ICON } from '../theme';
+import { useStore } from '../store';
 
 interface EventRowProps {
   event: SentinelEvent;
@@ -22,31 +23,33 @@ const relTime = (d: Date): string => {
 };
 
 export const EventRow: React.FC<EventRowProps> = ({ event, compact = false }) => {
-  const color  = EVENT_COLOR[event.type] ?? C.t2;
-  const bg     = EVENT_BG[event.type]    ?? 'rgba(255,255,255,0.04)';
-  const icon   = EVENT_ICON[event.type]  ?? 'ellipse';
+  const { isDark } = useStore();
+  const col   = getColors(isDark);
+  const color = getEventColor(event.type, isDark);
+  const bg    = EVENT_BG[event.type] ?? (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)');
+  const icon  = EVENT_ICON[event.type] ?? 'ellipse';
 
   return (
-    <View style={[styles.row, compact && styles.compact]}>
+    <View style={[styles.row, compact && styles.compact, { borderBottomColor: col.border }]}>
       <View style={[styles.iconWrap, { backgroundColor: bg }]}>
         <Ionicons name={icon as any} size={compact ? 15 : 17} color={color} />
       </View>
       <View style={styles.body}>
         <View style={styles.topRow}>
-          <Text style={[styles.title, compact && styles.titleCompact]} numberOfLines={1}>
+          <Text style={[styles.title, compact && styles.titleCompact, { color: col.text }]} numberOfLines={1}>
             {event.title}
           </Text>
-          <Text style={styles.time}>{relTime(event.time)}</Text>
+          <Text style={[styles.time, { color: col.t3 }]}>{relTime(event.time)}</Text>
         </View>
         {!compact && (
-          <Text style={styles.sub} numberOfLines={1}>{event.body}</Text>
+          <Text style={[styles.sub, { color: col.t2 }]} numberOfLines={1}>{event.body}</Text>
         )}
       </View>
       {event.severity === 'warning' && !event.resolved && (
-        <View style={styles.dot} />
+        <View style={[styles.dot, { backgroundColor: col.orange }]} />
       )}
       {event.severity === 'alert' && !event.resolved && (
-        <View style={[styles.dot, { backgroundColor: C.red }]} />
+        <View style={[styles.dot, { backgroundColor: col.red }]} />
       )}
     </View>
   );

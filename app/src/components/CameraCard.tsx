@@ -58,12 +58,10 @@ export const CameraCard: React.FC<CameraCardProps> = ({ camera, compact = false 
 
         {/* Grid overlay — simulates camera grid lines */}
         <View style={[StyleSheet.absoluteFill, styles.grid]} pointerEvents="none">
-          {[0.33, 0.66].map(p => (
-            <View key={p} style={[styles.gridV, { left: `${p * 100}%` as any }]} />
-          ))}
-          {[0.33, 0.66].map(p => (
-            <View key={p} style={[styles.gridH, { top: `${p * 100}%` as any }]} />
-          ))}
+          <View style={[styles.gridV, { left: '33%' }]} />
+          <View style={[styles.gridV, { left: '66%' }]} />
+          <View style={[styles.gridH, { top: '33%' }]} />
+          <View style={[styles.gridH, { top: '66%' }]} />
         </View>
 
         {/* Detection box (when motion active) */}
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 2,
   },
-  tsText: { color: 'rgba(255,255,255,0.6)', fontSize: 10, fontVariant: ['tabular-nums'] },
+  tsText: { color: 'rgba(255,255,255,0.6)', fontSize: 10 },
   privacyOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',

@@ -5,7 +5,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../store';
-import { C } from '../theme';
+import { C, getColors } from '../theme';
 
 const relTime = (d: Date) => {
   const m = Math.floor((Date.now() - d.getTime()) / 60000);
@@ -16,18 +16,19 @@ const relTime = (d: Date) => {
 
 export const ProfileScreen: React.FC = () => {
   const {
-    household, armed, privacyMode,
-    toggleArmed, togglePrivacy, subscription,
+    household, armed, privacyMode, isDark,
+    toggleArmed, togglePrivacy, toggleTheme, subscription,
   } = useStore();
+  const col = getColors(isDark);
   const insets = useSafeAreaInsets();
 
   const homeCount = household.filter(m => m.status === 'home').length;
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
+    <View style={[styles.root, { paddingTop: insets.top, backgroundColor: col.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.heading}>Household & Settings</Text>
+      <View style={[styles.header, { borderBottomColor: col.border }]}>
+        <Text style={[styles.heading, { color: col.text }]}>Household & Settings</Text>
         <View style={styles.planBadge}>
           <Text style={styles.planText}>{subscription.toUpperCase()}</Text>
         </View>
@@ -38,8 +39,8 @@ export const ProfileScreen: React.FC = () => {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
       >
         {/* ── HOUSEHOLD ── */}
-        <Text style={styles.sectionLabel}>Household</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: col.t2 }]}>Household</Text>
+        <View style={[styles.card, { backgroundColor: col.s1, borderColor: col.border }]}>
           {household.map((member, index) => (
             <React.Fragment key={member.id}>
               <View style={styles.memberRow}>
@@ -53,8 +54,8 @@ export const ProfileScreen: React.FC = () => {
                       styles.statusBadge,
                       member.status === 'home' ? styles.statusHome : styles.statusAway,
                     ]}>
-                      <View style={[styles.statusDot, { backgroundColor: member.status === 'home' ? C.green : C.t3 }]} />
-                      <Text style={[styles.statusText, { color: member.status === 'home' ? C.green : C.t3 }]}>
+                      <View style={[styles.statusDot, { backgroundColor: member.status === 'home' ? col.green : col.t3 }]} />
+                      <Text style={[styles.statusText, { color: member.status === 'home' ? col.green : col.t3 }]}>
                         {member.status === 'home' ? 'Home' : 'Away'}
                       </Text>
                     </View>
@@ -77,14 +78,14 @@ export const ProfileScreen: React.FC = () => {
         </View>
 
         {/* ── HOME STATUS ── */}
-        <Text style={styles.sectionLabel}>Home Status</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: col.t2 }]}>Home Status</Text>
+        <View style={[styles.card, { backgroundColor: col.s1, borderColor: col.border }]}>
           <View style={styles.statusRow}>
             <View style={styles.statusLeft}>
-              <Ionicons name="shield-checkmark" size={18} color={armed ? C.green : C.t2} />
+              <Ionicons name="shield-checkmark" size={18} color={armed ? col.green : col.t2} />
               <View>
-                <Text style={styles.settingTitle}>System Armed</Text>
-                <Text style={styles.settingDesc}>
+                <Text style={[styles.settingTitle, { color: col.text }]}>System Armed</Text>
+                <Text style={[styles.settingDesc, { color: col.t3 }]}>
                   {armed ? 'All entry points monitored' : 'Motion detection paused'}
                 </Text>
               </View>
@@ -92,18 +93,18 @@ export const ProfileScreen: React.FC = () => {
             <Switch
               value={armed}
               onValueChange={toggleArmed}
-              trackColor={{ false: C.s4, true: `${C.green}88` }}
-              thumbColor={armed ? C.green : C.t2}
-              ios_backgroundColor={C.s4}
+              trackColor={{ false: col.s4, true: `${col.green}88` }}
+              thumbColor={armed ? col.green : col.t2}
+              ios_backgroundColor={col.s4}
             />
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: col.border }]} />
           <View style={styles.statusRow}>
             <View style={styles.statusLeft}>
-              <Ionicons name={privacyMode ? 'eye-off' : 'eye'} size={18} color={privacyMode ? C.orange : C.t2} />
+              <Ionicons name={privacyMode ? 'eye-off' : 'eye'} size={18} color={privacyMode ? col.orange : col.t2} />
               <View>
-                <Text style={styles.settingTitle}>Privacy Mode</Text>
-                <Text style={styles.settingDesc}>
+                <Text style={[styles.settingTitle, { color: col.text }]}>Privacy Mode</Text>
+                <Text style={[styles.settingDesc, { color: col.t3 }]}>
                   {privacyMode ? 'All cameras paused' : 'Cameras monitoring'}
                 </Text>
               </View>
@@ -111,20 +112,43 @@ export const ProfileScreen: React.FC = () => {
             <Switch
               value={privacyMode}
               onValueChange={togglePrivacy}
-              trackColor={{ false: C.s4, true: `${C.orange}88` }}
-              thumbColor={privacyMode ? C.orange : C.t2}
-              ios_backgroundColor={C.s4}
+              trackColor={{ false: col.s4, true: `${col.orange}88` }}
+              thumbColor={privacyMode ? col.orange : col.t2}
+              ios_backgroundColor={col.s4}
+            />
+          </View>
+        </View>
+
+        {/* ── APPEARANCE ── */}
+        <Text style={[styles.sectionLabel, { color: col.t2 }]}>Appearance</Text>
+        <View style={[styles.card, { backgroundColor: col.s1, borderColor: col.border }]}>
+          <View style={styles.statusRow}>
+            <View style={styles.statusLeft}>
+              <Ionicons name={isDark ? 'moon' : 'sunny'} size={18} color={col.accent} />
+              <View>
+                <Text style={[styles.settingTitle, { color: col.text }]}>Dark Mode</Text>
+                <Text style={[styles.settingDesc, { color: col.t3 }]}>
+                  {isDark ? 'Dark interface active' : 'Light interface active'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: col.s4, true: `${col.accent}88` }}
+              thumbColor={isDark ? col.accent : col.t2}
+              ios_backgroundColor={col.s4}
             />
           </View>
         </View>
 
         {/* ── SUBSCRIPTION ── */}
-        <Text style={styles.sectionLabel}>Subscription</Text>
-        <View style={[styles.card, styles.subCard]}>
+        <Text style={[styles.sectionLabel, { color: col.t2 }]}>Subscription</Text>
+        <View style={[styles.card, styles.subCard, { backgroundColor: col.s1, borderColor: col.border }]}>
           <View style={styles.subHeader}>
             <View>
-              <Text style={styles.subPlan}>Sentinel {subscription.charAt(0).toUpperCase() + subscription.slice(1)}</Text>
-              <Text style={styles.subPrice}>
+              <Text style={[styles.subPlan, { color: col.text }]}>Sentinel {subscription.charAt(0).toUpperCase() + subscription.slice(1)}</Text>
+              <Text style={[styles.subPrice, { color: col.t2 }]}>
                 {subscription === 'free' ? 'Free' : subscription === 'home' ? '$19.99 / month' : '$39.99 / month'}
               </Text>
             </View>
@@ -148,8 +172,8 @@ export const ProfileScreen: React.FC = () => {
         </View>
 
         {/* ── NOTIFICATIONS ── */}
-        <Text style={styles.sectionLabel}>Notifications</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: col.t2 }]}>Notifications</Text>
+        <View style={[styles.card, { backgroundColor: col.s1, borderColor: col.border }]}>
           {[
             { label: 'Family arrivals & departures', value: true, icon: 'person' },
             { label: 'Unknown visitors',             value: true, icon: 'help-circle' },
@@ -160,14 +184,14 @@ export const ProfileScreen: React.FC = () => {
             <React.Fragment key={item.label}>
               <View style={styles.statusRow}>
                 <View style={styles.statusLeft}>
-                  <Ionicons name={item.icon as any} size={16} color={C.t2} />
-                  <Text style={styles.settingTitle}>{item.label}</Text>
+                  <Ionicons name={item.icon as any} size={16} color={col.t2} />
+                  <Text style={[styles.settingTitle, { color: col.text }]}>{item.label}</Text>
                 </View>
                 <Switch
                   value={item.value}
-                  trackColor={{ false: C.s4, true: `${C.accent}88` }}
-                  thumbColor={item.value ? C.accent : C.t2}
-                  ios_backgroundColor={C.s4}
+                  trackColor={{ false: col.s4, true: `${col.accent}88` }}
+                  thumbColor={item.value ? col.accent : col.t2}
+                  ios_backgroundColor={col.s4}
                 />
               </View>
               {i < arr.length - 1 && <View style={styles.divider} />}
@@ -176,8 +200,8 @@ export const ProfileScreen: React.FC = () => {
         </View>
 
         {/* ── ABOUT ── */}
-        <Text style={styles.sectionLabel}>About</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: col.t2 }]}>About</Text>
+        <View style={[styles.card, { backgroundColor: col.s1, borderColor: col.border }]}>
           {[
             { label: 'Version', value: '1.0.0 (Beta)' },
             { label: 'Cameras', value: '4 registered' },
@@ -186,15 +210,15 @@ export const ProfileScreen: React.FC = () => {
           ].map((row, i, arr) => (
             <React.Fragment key={row.label}>
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>{row.label}</Text>
-                <Text style={styles.infoValue}>{row.value}</Text>
+                <Text style={[styles.infoLabel, { color: col.t2 }]}>{row.label}</Text>
+                <Text style={[styles.infoValue, { color: col.text }]}>{row.value}</Text>
               </View>
-              {i < arr.length - 1 && <View style={styles.divider} />}
+              {i < arr.length - 1 && <View style={[styles.divider, { backgroundColor: col.border }]} />}
             </React.Fragment>
           ))}
         </View>
 
-        <Text style={styles.footer}>Sentinel · Your home knows who belongs.</Text>
+        <Text style={[styles.footer, { color: col.t3 }]}>Sentinel · Your home knows who belongs.</Text>
       </ScrollView>
     </View>
   );
