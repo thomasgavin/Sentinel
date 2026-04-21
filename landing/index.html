@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sentinel — Your home knows who belongs.</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808;
+  --s1:#0f0f0f;
+  --s2:#161616;
+  --s3:#1e1e1e;
+  --border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.12);
+  --text:#ffffff;
+  --t2:#888888;
+  --t3:#444444;
+  --accent:#00E5FF;
+  --accent-dim:rgba(0,229,255,0.12);
+  --accent-glow:rgba(0,229,255,0.25);
+  --green:#00FF87;
+  --green-dim:rgba(0,255,135,0.12);
+  --orange:#FF8A3D;
+  --orange-dim:rgba(255,138,61,0.15);
+  --red:#FF3357;
+  --red-dim:rgba(255,51,87,0.15);
+  --amber:#FFD166;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 48px;
+  background:rgba(8,8,8,0.8);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase}
+.nav-orb-mini{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#40f0ff,#001a22);box-shadow:0 0 12px var(--accent-glow)}
+.nav-links{display:flex;gap:28px}
+.nav-links a{color:var(--t2);text-decoration:none;font-size:13px;letter-spacing:0.02em;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:transparent;color:var(--accent);border:1px solid rgba(0,229,255,0.4);border-radius:6px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:all .2s}
+.nav-cta:hover{background:var(--accent-dim);border-color:var(--accent)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:140px 24px 80px;position:relative;overflow:hidden;
+}
+.hero-noise{
+  position:absolute;inset:0;z-index:0;opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.hero-glow{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.06) 0%,transparent 65%);pointer-events:none;z-index:0}
+
+/* ── ORB ── */
+.orb-scene{position:relative;z-index:1;width:130px;height:130px;margin-bottom:48px}
+.orb-halo{position:absolute;inset:-32px;border-radius:50%;border:1px solid rgba(0,229,255,0.1);animation:halo 4s ease-in-out infinite}
+.orb-halo2{position:absolute;inset:-56px;border-radius:50%;border:1px solid rgba(0,229,255,0.05);animation:halo 4s ease-in-out infinite .8s}
+.orb{
+  width:130px;height:130px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 36% 30%,#1cf5ff 0%,#0090aa 30%,#001a22 65%,#050e12 100%);
+  box-shadow:0 0 50px rgba(0,229,255,0.4),0 0 100px rgba(0,229,255,0.18),0 0 200px rgba(0,229,255,0.07),inset 0 1px 0 rgba(255,255,255,0.1);
+  transition:box-shadow .5s,background .5s;
+}
+.orb.state-family{
+  background:radial-gradient(circle at 36% 30%,#1cffa0 0%,#009960 30%,#001a0e 65%,#050e08 100%);
+  box-shadow:0 0 50px rgba(0,255,135,0.5),0 0 100px rgba(0,255,135,0.2),0 0 200px rgba(0,255,135,0.08),inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.orb.state-unknown{
+  background:radial-gradient(circle at 36% 30%,#ffb46c 0%,#aa5500 30%,#1a0d00 65%,#0e0800 100%);
+  box-shadow:0 0 50px rgba(255,138,61,0.5),0 0 100px rgba(255,138,61,0.22),0 0 200px rgba(255,138,61,0.08),inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.orb.state-threat{
+  background:radial-gradient(circle at 36% 30%,#ff5577 0%,#aa0022 30%,#1a0008 65%,#0e0005 100%);
+  box-shadow:0 0 60px rgba(255,51,87,0.65),0 0 120px rgba(255,51,87,0.3),0 0 240px rgba(255,51,87,0.12),inset 0 1px 0 rgba(255,255,255,0.1);
+  animation:threat-pulse .5s ease-in-out infinite!important;
+}
+.orb.state-privacy{
+  background:radial-gradient(circle at 36% 30%,#444 0%,#222 40%,#111 100%);
+  box-shadow:none;
+}
+@keyframes threat-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+@keyframes halo{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:.15;transform:scale(1.05)}}
+
+/* ── HERO ORB EYES ── */
+.orb-eyes{
+  position:absolute;top:46%;left:50%;
+  transform:translate(-50%,-50%);
+  display:flex;gap:26px;align-items:center;
+  transition:gap .3s;
+}
+.orb-eye{
+  width:20px;height:14px;border-radius:50%;
+  background:rgba(255,255,255,0.95);
+  box-shadow:0 0 12px rgba(255,255,255,0.7);
+  transition:width .3s,height .3s,border-radius .3s,transform .3s,background .3s,box-shadow .3s;
+  transform-origin:center center;
+}
+.orb.state-family .orb-eyes{gap:28px}
+.orb.state-family .orb-eye{
+  width:22px;height:12px;
+  border-radius:50% 50% 3px 3px / 100% 100% 12% 12%;
+  background:rgba(255,255,255,1);
+  box-shadow:0 0 20px rgba(255,255,255,1),0 0 34px rgba(0,255,135,.5);
+}
+.orb.state-family .orb-eye:first-child{transform:rotate(-5deg)}
+.orb.state-family .orb-eye:last-child{transform:rotate(5deg)}
+.orb.state-unknown .orb-eye{
+  width:19px;height:4px;
+  border-radius:3px 3px 1px 1px;
+  background:rgba(255,255,255,.85);
+  box-shadow:0 0 5px rgba(255,255,255,.35);
+}
+.orb.state-unknown .orb-eye:first-child{transform:rotate(10deg)}
+.orb.state-unknown .orb-eye:last-child{transform:rotate(-10deg)}
+.orb.state-threat .orb-eye{
+  width:18px;height:4px;
+  border-radius:2px;
+  background:rgba(255,175,175,.95);
+  box-shadow:0 0 14px rgba(255,70,70,.8);
+}
+.orb.state-threat .orb-eye:first-child{transform:rotate(28deg)}
+.orb.state-threat .orb-eye:last-child{transform:rotate(-28deg)}
+.orb.state-privacy .orb-eye{height:0!important;opacity:0}
+.orb-eye.blink{height:1px!important;border-radius:1px!important}
+
+.orb-status{
+  position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);
+  font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--accent);white-space:nowrap;transition:color .4s;opacity:.8;
+}
+.orb-scene.state-family .orb-status{color:var(--green)}
+.orb-scene.state-unknown .orb-status{color:var(--orange)}
+.orb-scene.state-threat .orb-status{color:var(--red)}
+.orb-scene.state-privacy .orb-status{color:var(--t3)}
+
+.hero-eyebrow{
+  position:relative;z-index:1;
+  font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:20px;opacity:.8;
+}
+.hero h1{
+  position:relative;z-index:1;
+  font-size:clamp(40px,6.5vw,78px);font-weight:800;line-height:1.06;
+  letter-spacing:-0.03em;max-width:860px;margin-bottom:24px;
+}
+.hero h1 .line2{color:var(--t2);font-weight:300;font-style:italic}
+.hero>p{
+  position:relative;z-index:1;
+  font-size:17px;color:var(--t2);max-width:500px;margin-bottom:44px;line-height:1.75;
+}
+.hero-ctas{position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn-fill{background:var(--accent);color:#000;border:none;border-radius:7px;padding:14px 30px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:all .2s;box-shadow:0 4px 30px var(--accent-glow)}
+.btn-fill:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(0,229,255,.4)}
+.btn-outline{background:transparent;color:var(--t2);border:1px solid var(--border2);border-radius:7px;padding:14px 26px;font-size:14px;cursor:pointer;transition:all .2s}
+.btn-outline:hover{color:var(--text);border-color:var(--border2)}
+.hero-sub{position:relative;z-index:1;margin-top:22px;font-size:12px;color:var(--t3);letter-spacing:0.04em}
+
+/* ── TICKER BAR ── */
+.ticker{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0;overflow:hidden;position:relative}
+.ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.ticker-track{display:flex;gap:0;animation:ticker-scroll 30s linear infinite}
+.ticker-item{display:flex;align-items:center;gap:8px;padding:16px 40px;white-space:nowrap;font-size:13px;color:var(--t2);border-right:1px solid var(--border);flex-shrink:0}
+.ticker-item strong{color:var(--text)}
+.ticker-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── SECTIONS ── */
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.section{padding:100px 0}
+.label{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.8}
+h2.big{font-size:clamp(28px,4vw,50px);font-weight:800;line-height:1.12;letter-spacing:-.025em}
+.sub{font-size:16px;color:var(--t2);line-height:1.75;max-width:500px;margin-top:16px}
+
+/* ── PAIN SECTION ── */
+.pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:56px;border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+.pain-side{background:var(--s1);padding:36px}
+.pain-side+.pain-side{border-left:1px solid var(--border)}
+.pain-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:4px 10px;margin-bottom:22px}
+.pain-tag.bad{background:var(--red-dim);color:var(--red)}
+.pain-tag.good{background:var(--accent-dim);color:var(--accent)}
+.pain-side h3{font-size:19px;font-weight:700;margin-bottom:6px}
+.pain-side .desc{font-size:13px;color:var(--t2);margin-bottom:20px}
+
+.notif-flood{height:240px;overflow:hidden;position:relative;border-radius:10px;background:var(--s2);border:1px solid var(--border)}
+.notif-flood::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(transparent,var(--s2));z-index:2;pointer-events:none}
+.notif-stream{display:flex;flex-direction:column;gap:6px;padding:10px;animation:stream-scroll 12s linear infinite}
+.notif-item{display:flex;align-items:center;gap:10px;background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;flex-shrink:0}
+.notif-app-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.notif-app-icon.ring{background:#e8500a}
+.notif-app-icon.wapp{background:#25d366}
+.notif-app-icon.mail{background:#0a84ff}
+.notif-text{flex:1}
+.notif-title{font-size:12px;font-weight:600;line-height:1}
+.notif-body{font-size:11px;color:var(--t2);margin-top:2px}
+.notif-time{font-size:10px;color:var(--t3)}
+@keyframes stream-scroll{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+
+/* Sentinel events — fixed-height timeline */
+.sentinel-log{
+  display:flex;flex-direction:column;gap:6px;
+  position:relative;height:196px;overflow:hidden;
+  padding-left:24px;margin-bottom:12px;
+}
+.sentinel-log::before{
+  content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1px;
+  background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,.1) 18%,rgba(255,255,255,.1) 82%,transparent 100%);
+}
+.s-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:8px;font-size:13px;
+  border:1px solid var(--border);background:var(--s2);
+  transition:border-color .3s,opacity .45s ease,transform .45s ease;
+  position:relative;flex-shrink:0;
+}
+.s-row::before{
+  content:'';position:absolute;left:-20px;width:7px;height:7px;
+  border-radius:50%;background:var(--t3);top:50%;transform:translateY(-50%);
+}
+.s-row.soft::before{background:var(--amber)}
+.s-row.warn::before{background:var(--orange)}
+.s-row.silent{border-color:transparent;opacity:.6}
+.s-row.soft .s-dot{background:var(--amber)}
+.s-row.warn .s-dot{background:var(--orange)}
+.s-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.s-label{flex:1;color:var(--t2)}
+.s-label strong{color:var(--text)}
+.s-chip{font-size:10px;font-weight:600;letter-spacing:.08em;padding:2px 7px;border-radius:3px}
+.s-chip.silent{background:rgba(255,255,255,.04);color:var(--t3)}
+.s-chip.soft{background:rgba(255,209,102,.1);color:var(--amber)}
+.s-chip.warn{background:var(--orange-dim);color:var(--orange)}
+
+.presence-card{margin-top:16px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.presence-title{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+.p-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.p-row:last-child{border-bottom:none}
+.p-led{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.p-led.home{background:var(--green);box-shadow:0 0 8px rgba(0,255,135,.5)}
+.p-led.away{background:var(--s3)}
+.p-name{flex:1;font-size:13px;font-weight:600}
+.p-meta{font-size:12px;color:var(--t2)}
+
+/* ── ORB DEMO ── */
+.demo-section{padding:100px 0;background:linear-gradient(180deg,transparent,rgba(0,229,255,.025),transparent)}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-top:56px}
+.demo-orb-wrap{display:flex;flex-direction:column;align-items:center;gap:40px}
+.demo-orb-scene{position:relative;width:180px;height:180px}
+.demo-orb-halo{position:absolute;inset:-28px;border-radius:50%;border:1px solid rgba(0,229,255,.12);animation:halo 4s ease-in-out infinite}
+.demo-orb-halo2{position:absolute;inset:-52px;border-radius:50%;border:1px solid rgba(0,229,255,.06);animation:halo 4s ease-in-out infinite .9s}
+.demo-orb{
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,#1cf5ff 0%,#0090aa 30%,#001a22 65%,#050e12 100%);
+  box-shadow:0 0 60px rgba(0,229,255,.45),0 0 120px rgba(0,229,255,.18),0 0 240px rgba(0,229,255,.07),inset 0 1px 0 rgba(255,255,255,.1);
+  transition:background .6s,box-shadow .6s;position:relative;
+}
+.demo-orb.s-family{
+  background:radial-gradient(circle at 36% 30%,#1cffa0 0%,#009960 30%,#001a0e 65%);
+  box-shadow:0 0 60px rgba(0,255,135,.55),0 0 120px rgba(0,255,135,.22),0 0 240px rgba(0,255,135,.08),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.demo-orb.s-unknown{
+  background:radial-gradient(circle at 36% 30%,#ffb46c 0%,#aa5500 30%,#1a0d00 65%);
+  box-shadow:0 0 60px rgba(255,138,61,.55),0 0 120px rgba(255,138,61,.22),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.demo-orb.s-threat{
+  background:radial-gradient(circle at 36% 30%,#ff5577 0%,#aa0022 30%,#1a0008 65%);
+  box-shadow:0 0 70px rgba(255,51,87,.7),0 0 140px rgba(255,51,87,.3),inset 0 1px 0 rgba(255,255,255,.1);
+  animation:threat-pulse .5s ease-in-out infinite;
+}
+.demo-orb.s-privacy{
+  background:radial-gradient(circle at 36% 30%,#2a2a2a 0%,#151515 40%,#0a0a0a 100%)!important;
+  box-shadow:none!important;
+  animation:none!important;
+}
+.demo-orb-scene.s-privacy .demo-orb-halo,
+.demo-orb-scene.s-privacy .demo-orb-halo2{opacity:0;transition:opacity .4s}
+
+.demo-eyes{position:absolute;top:47%;left:50%;transform:translate(-50%,-50%);display:flex;gap:36px;align-items:center;transition:gap .3s}
+.demo-eye{
+  width:28px;height:19px;border-radius:50%;
+  background:rgba(255,255,255,.95);box-shadow:0 0 14px rgba(255,255,255,.7);
+  transition:width .3s,height .3s,border-radius .3s,transform .3s,background .3s,box-shadow .3s;
+  transform-origin:center center;
+}
+.demo-orb.s-family .demo-eyes{gap:38px}
+.demo-orb.s-family .demo-eye{width:30px;height:16px;border-radius:50% 50% 3px 3px / 100% 100% 12% 12%;background:#fff;box-shadow:0 0 24px rgba(255,255,255,1),0 0 40px rgba(0,255,135,.55)}
+.demo-orb.s-family .demo-eye:first-child{transform:rotate(-5deg)}
+.demo-orb.s-family .demo-eye:last-child{transform:rotate(5deg)}
+.demo-orb.s-unknown .demo-eye{width:26px;height:5px;border-radius:4px 4px 1px 1px;background:rgba(255,255,255,.85);box-shadow:0 0 5px rgba(255,255,255,.3)}
+.demo-orb.s-unknown .demo-eye:first-child{transform:rotate(10deg)}
+.demo-orb.s-unknown .demo-eye:last-child{transform:rotate(-10deg)}
+.demo-orb.s-threat .demo-eye{width:25px;height:5px;border-radius:2px;background:rgba(255,175,175,.95);box-shadow:0 0 16px rgba(255,70,70,.8)}
+.demo-orb.s-threat .demo-eye:first-child{transform:rotate(28deg)}
+.demo-orb.s-threat .demo-eye:last-child{transform:rotate(-28deg)}
+.demo-orb.s-privacy .demo-eye{height:0!important;opacity:0}
+.demo-eye.blink{height:1px!important;border-radius:1px!important}
+
+.state-controls{display:flex;flex-direction:column;gap:10px;width:100%}
+.state-btn{
+  display:flex;align-items:center;gap:14px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:16px 18px;cursor:pointer;
+  transition:all .2s;text-align:left;width:100%;
+}
+.state-btn:hover{border-color:var(--border2)}
+.state-btn.active{border-color:var(--accent)!important;background:rgba(0,229,255,.05)}
+.state-btn.active.s-family-btn{border-color:var(--green)!important;background:rgba(0,255,135,.04)}
+.state-btn.active.s-unknown-btn{border-color:var(--orange)!important;background:rgba(255,138,61,.05)}
+.state-btn.active.s-threat-btn{border-color:var(--red)!important;background:rgba(255,51,87,.05)}
+.state-indicator{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.state-btn-text{flex:1}
+.state-btn-title{font-size:14px;font-weight:600;color:var(--text)}
+.state-btn-sub{font-size:12px;color:var(--t2);margin-top:2px;font-style:italic}
+
+/* ── COMPARE ── */
+.compare-section{padding:100px 0;background:var(--s1)}
+.compare-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:52px;align-items:start}
+.compare-table{width:100%;border-collapse:collapse}
+.compare-table th{padding:14px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:var(--t2);border-bottom:1px solid var(--border)}
+.compare-table td{padding:13px 18px;font-size:13px;color:var(--t2);border-bottom:1px solid var(--border)}
+.compare-table td:first-child{color:var(--text);font-weight:500;font-size:12px}
+.compare-table tr:last-child td{border-bottom:none}
+.chk{color:var(--green)}
+.xmk{color:var(--t3)}
+.pmk{color:var(--amber)}
+.sentinel-chat{
+  background:var(--bg);border:1px solid rgba(0,229,255,.2);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 0 60px rgba(0,229,255,.06);
+}
+.chat-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  background:rgba(0,229,255,.04);
+}
+.chat-orb-mini{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 35% 32%,#1cf5ff,#001a22);
+  box-shadow:0 0 10px var(--accent-glow);
+  position:relative;display:flex;align-items:center;justify-content:center;
+}
+.chat-orb-eyes{display:flex;gap:5px;position:absolute}
+.chat-orb-eye{width:3px;height:2px;border-radius:50%;background:rgba(255,255,255,.9)}
+.chat-name{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.chat-live{display:flex;align-items:center;gap:5px;margin-left:auto;font-size:11px;color:var(--green)}
+.chat-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(0,255,135,.6);animation:livepulse 2s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.4}}
+.chat-body{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:360px}
+.chat-msg{
+  display:flex;align-items:flex-start;gap:10px;
+  animation:msgIn .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.chat-msg-orb{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:2px;
+  background:radial-gradient(circle at 35% 32%,#1cf5ff,#001a22);
+  box-shadow:0 0 8px var(--accent-glow);}
+.chat-msg-orb.green{background:radial-gradient(circle at 35% 32%,#1cffa0,#001a0e);box-shadow:0 0 8px rgba(0,255,135,.3)}
+.chat-msg-orb.orange{background:radial-gradient(circle at 35% 32%,#ffb46c,#1a0d00);box-shadow:0 0 8px rgba(255,138,61,.3)}
+.chat-msg-orb.red{background:radial-gradient(circle at 35% 32%,#ff5577,#1a0008);box-shadow:0 0 8px rgba(255,51,87,.3)}
+.chat-bubble{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:4px 14px 14px 14px;
+  padding:10px 14px;font-size:13px;line-height:1.55;color:var(--text);max-width:calc(100% - 36px);
+}
+.chat-bubble.green{border-color:rgba(0,255,135,.2);background:rgba(0,255,135,.05)}
+.chat-bubble.orange{border-color:rgba(255,138,61,.25);background:rgba(255,138,61,.06)}
+.chat-bubble.red{border-color:rgba(255,51,87,.3);background:rgba(255,51,87,.06)}
+.chat-bubble.cyan{border-color:rgba(0,229,255,.2);background:rgba(0,229,255,.05)}
+.chat-meta{font-size:10px;color:var(--t3);margin-top:5px}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-msg.user .chat-bubble{
+  border-radius:14px 4px 14px 14px;
+  background:rgba(255,255,255,.05);border-color:var(--border2);
+  font-size:13px;color:var(--t2);
+}
+.typing-indicator{display:flex;align-items:center;gap:10px}
+.typing-dots{display:flex;gap:4px;padding:10px 16px;background:var(--s2);border:1px solid var(--border);border-radius:4px 14px 14px 14px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--t3)}
+.typing-dot:nth-child(1){animation:tdot .9s ease-in-out infinite}
+.typing-dot:nth-child(2){animation:tdot .9s ease-in-out infinite .2s}
+.typing-dot:nth-child(3){animation:tdot .9s ease-in-out infinite .4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);background:var(--t3)}30%{transform:translateY(-5px);background:var(--accent)}}
+
+/* ── FEATURES ── */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px}
+.feat{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:28px;transition:border-color .25s,transform .25s;display:flex;flex-direction:column}
+.feat:hover{border-color:var(--border2);transform:translateY(-3px)}
+.feat-icon{width:40px;height:40px;border-radius:9px;background:var(--accent-dim);border:1px solid rgba(0,229,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:18px}
+.feat h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.feat p{font-size:13px;color:var(--t2);line-height:1.7;flex:1}
+.feat-quote{margin-top:auto;padding:10px 14px;background:rgba(0,229,255,.05);border-left:2px solid rgba(0,229,255,.4);border-radius:0 7px 7px 0;font-size:12px;color:rgba(0,229,255,.7);font-style:italic;line-height:1.6}
+
+/* ── GETS SMARTER ── */
+.smarter-section{padding:100px 0}
+.smarter-timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:52px;border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+.smarter-phase{padding:36px;background:var(--s2)}
+.smarter-phase+.smarter-phase{border-left:1px solid var(--border)}
+.smarter-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:3px 9px;margin-bottom:18px;background:var(--accent-dim);color:var(--accent)}
+.smarter-phase h3{font-size:17px;font-weight:700;margin-bottom:10px}
+.smarter-phase p{font-size:13px;color:var(--t2);line-height:1.7}
+.smarter-phase .s-quote{margin-top:14px;padding:10px 14px;background:var(--s3);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--t2);font-style:italic;line-height:1.6}
+.moat-note{margin-top:48px;padding:28px 32px;background:var(--s1);border:1px solid var(--border);border-radius:14px;display:flex;gap:20px;align-items:flex-start}
+.moat-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.moat-text h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.moat-text p{font-size:13px;color:var(--t2);line-height:1.7}
+
+/* ── HARDWARE PRICING ── */
+.hw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:40px}
+.hw-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;transition:border-color .25s,transform .25s;position:relative}
+.hw-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.hw-card.featured{border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.03)}
+.hw-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 12px;border-radius:20px}
+.hw-icon{font-size:28px;margin-bottom:12px}
+.hw-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.hw-desc{font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.5}
+.hw-price{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.hw-note{font-size:11px;color:var(--t3);margin-top:4px}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;align-items:start}
+.price-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative}
+.price-card.featured{background:rgba(0,229,255,.04);border-color:rgba(0,229,255,.35)}
+.price-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:20px}
+.price-tier{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2);margin-bottom:12px}
+.price-num{font-size:42px;font-weight:800;line-height:1;letter-spacing:-.03em;margin-bottom:4px}
+.price-num span{font-size:15px;font-weight:400;color:var(--t2)}
+.price-period{font-size:13px;color:var(--t3);margin-bottom:26px}
+.price-divider{height:1px;background:var(--border);margin-bottom:22px}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:11px}
+.price-list li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--t2);line-height:1.5}
+.price-list li .chk,.price-list li .xmk{flex-shrink:0;margin-top:1px}
+.price-btn{width:100%;margin-top:26px;padding:13px;border-radius:9px;font-size:13px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:all .2s}
+.price-btn.ghost{background:transparent;color:var(--t2);border:1px solid var(--border)}
+.price-btn.ghost:hover{color:var(--text);border-color:var(--border2)}
+.price-btn.solid{background:var(--accent);color:#000;border:none;box-shadow:0 4px 24px var(--accent-glow)}
+.price-btn.solid:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(0,229,255,.4)}
+
+/* ── CTA ── */
+.cta-section{padding:120px 24px;text-align:center;position:relative;overflow:hidden}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(0,229,255,.06) 0%,transparent 70%);pointer-events:none}
+.cta-section h2{position:relative;z-index:1;font-size:clamp(32px,5vw,60px);font-weight:800;letter-spacing:-.03em;line-height:1.1;max-width:640px;margin:0 auto 18px}
+.cta-section p{position:relative;z-index:1;font-size:16px;color:var(--t2);max-width:440px;margin:0 auto 40px}
+.email-form{position:relative;z-index:1;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.email-in{background:var(--s1);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:13px 18px;font-size:14px;width:300px;outline:none;transition:border-color .2s}
+.email-in:focus{border-color:rgba(0,229,255,.5)}
+.email-in::placeholder{color:var(--t3)}
+.cta-note{position:relative;z-index:1;margin-top:14px;font-size:12px;color:var(--t3)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.footer-links{display:flex;gap:22px}
+.footer-links a{color:var(--t3);font-size:12px;text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--t2)}
+.footer-copy{color:var(--t3);font-size:12px}
+
+/* ── BACKGROUND SECURITY PATTERN ── */
+.bg-pattern{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  opacity:1;
+}
+.bg-pattern svg{width:100%;height:100%;display:block}
+
+/* ── FADE IN ── */
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  nav{padding:16px 20px}
+  .nav-links{display:none}
+  .pain-grid,.demo-grid,.smarter-timeline,.compare-layout,.features-grid,.pricing-grid,.hw-grid{grid-template-columns:1fr}
+  .pain-side+.pain-side,.smarter-phase+.smarter-phase{border-left:none;border-top:1px solid var(--border)}
+  footer{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- SECURITY ICON NETWORK BACKGROUND -->
+<div class="bg-pattern" aria-hidden="true">
+<svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg-icon{fill:none;stroke:#222;stroke-width:1.2;opacity:0.55}
+      .bg-line{stroke:#1e1e1e;stroke-width:0.8;stroke-dasharray:4 6;opacity:0.4}
+      .bg-dot{fill:#222;opacity:0.6}
+    </style>
+  </defs>
+  <line class="bg-line" x1="118" y1="160" x2="340" y2="290"/>
+  <line class="bg-line" x1="340" y1="290" x2="580" y2="190"/>
+  <line class="bg-line" x1="580" y1="190" x2="820" y2="310"/>
+  <line class="bg-line" x1="820" y1="310" x2="1100" y2="200"/>
+  <line class="bg-line" x1="1100" y1="200" x2="1320" y2="340"/>
+  <line class="bg-line" x1="118" y1="160" x2="200" y2="480"/>
+  <line class="bg-line" x1="340" y1="290" x2="480" y2="560"/>
+  <line class="bg-line" x1="580" y1="190" x2="620" y2="530"/>
+  <line class="bg-line" x1="820" y1="310" x2="760" y2="620"/>
+  <line class="bg-line" x1="1100" y1="200" x2="1060" y2="520"/>
+  <line class="bg-line" x1="1320" y1="340" x2="1360" y2="620"/>
+  <line class="bg-line" x1="200" y1="480" x2="480" y2="560"/>
+  <line class="bg-line" x1="480" y1="560" x2="620" y2="530"/>
+  <line class="bg-line" x1="620" y1="530" x2="760" y2="620"/>
+  <line class="bg-line" x1="760" y1="620" x2="1060" y2="520"/>
+  <line class="bg-line" x1="1060" y1="520" x2="1360" y2="620"/>
+  <line class="bg-line" x1="200" y1="480" x2="90" y2="720"/>
+  <line class="bg-line" x1="480" y1="560" x2="370" y2="800"/>
+  <line class="bg-line" x1="760" y1="620" x2="700" y2="840"/>
+  <line class="bg-line" x1="1060" y1="520" x2="1200" y2="780"/>
+  <line class="bg-line" x1="1360" y1="620" x2="1400" y2="840"/>
+  <circle class="bg-dot" cx="118" cy="160" r="2.5"/>
+  <circle class="bg-dot" cx="340" cy="290" r="2.5"/>
+  <circle class="bg-dot" cx="580" cy="190" r="2.5"/>
+  <circle class="bg-dot" cx="820" cy="310" r="2.5"/>
+  <circle class="bg-dot" cx="1100" cy="200" r="2.5"/>
+  <circle class="bg-dot" cx="1320" cy="340" r="2.5"/>
+  <circle class="bg-dot" cx="200" cy="480" r="2.5"/>
+  <circle class="bg-dot" cx="480" cy="560" r="2.5"/>
+  <circle class="bg-dot" cx="620" cy="530" r="2.5"/>
+  <circle class="bg-dot" cx="760" cy="620" r="2.5"/>
+  <circle class="bg-dot" cx="1060" cy="520" r="2.5"/>
+  <circle class="bg-dot" cx="1360" cy="620" r="2.5"/>
+  <g transform="translate(100,140)" class="bg-icon"><path d="M18 2L4 7v6c0 8.4 6 16.3 14 18.4C26 29.3 32 21.4 32 13V7z"/><path d="M14 18l-4-4 1.4-1.4L14 15.2l8.6-8.6L24 8z"/></g>
+  <g transform="translate(322,272)" class="bg-icon"><rect x="2" y="7" width="32" height="22" rx="3"/><circle cx="18" cy="18" r="6"/><path d="M26 7l4-5h-6l-4 5"/><circle cx="28" cy="11" r="1.5"/></g>
+  <g transform="translate(562,178)" class="bg-icon"><path d="M2 12S8 4 18 4s16 8 16 8-6 8-16 8S2 12 2 12z"/><circle cx="18" cy="12" r="4"/><circle cx="18" cy="12" r="1.5" style="fill:#222;stroke:none"/></g>
+  <g transform="translate(802,292)" class="bg-icon"><rect x="6" y="14" width="24" height="18" rx="3"/><path d="M10 14v-4a8 8 0 0 1 16 0v4"/><circle cx="18" cy="23" r="2"/><line x1="18" y1="25" x2="18" y2="29"/></g>
+  <g transform="translate(1082,181)" class="bg-icon"><path d="M18 3L2 30h32z"/><line x1="18" y1="13" x2="18" y2="22"/><circle cx="18" cy="26" r="1.5"/></g>
+  <g transform="translate(1302,320)" class="bg-icon"><circle cx="18" cy="10" r="6"/><path d="M4 34c0-7.7 6.3-14 14-14s14 6.3 14 14"/></g>
+  <g transform="translate(182,462)" class="bg-icon"><path d="M4 10l14-8 14 8v16l-14 8-14-8z"/><path d="M4 10l14 8 14-10"/><line x1="18" y1="18" x2="18" y2="34"/><path d="M11 6l14 8"/></g>
+  <g transform="translate(462,542)" class="bg-icon"><path d="M18 3a1 1 0 0 0-1 1v1.3C11.4 6.8 7 11.4 7 17v7l-2 3h26l-2-3v-7c0-5.6-4.4-10.2-10-10.7V4a1 1 0 0 0-1-1z"/><path d="M14 30a4 4 0 0 0 8 0"/></g>
+  <g transform="translate(608,518)" class="bg-icon" style="opacity:0.4"><path d="M12 1L2 5v4c0 5.6 4 10.9 10 12.3C18 19.9 22 14.6 22 9V5z"/></g>
+  <g transform="translate(744,610)" class="bg-icon" style="opacity:0.4"><path d="M1 8S5 2 12 2s11 6 11 6-4 6-11 6S1 8 1 8z"/><circle cx="12" cy="8" r="2.5"/></g>
+  <g transform="translate(1044,508)" class="bg-icon" style="opacity:0.4"><rect x="1" y="5" width="22" height="15" rx="2"/><circle cx="12" cy="12.5" r="4"/><path d="M17 5l3-4h-4l-3 4"/></g>
+  <g transform="translate(1346,606)" class="bg-icon" style="opacity:0.4"><rect x="3" y="10" width="18" height="13" rx="2"/><path d="M6 10V7a6 6 0 0 1 12 0v3"/><circle cx="12" cy="17" r="1.5"/></g>
+  <g transform="translate(76,706)" class="bg-icon" style="opacity:0.35"><path d="M12 2L1 21h22z"/><line x1="12" y1="9" x2="12" y2="15"/><circle cx="12" cy="18" r="1"/></g>
+  <g transform="translate(356,785)" class="bg-icon" style="opacity:0.35"><circle cx="14" cy="8" r="5"/><path d="M2 28c0-6.6 5.4-12 12-12s12 5.4 12 12"/></g>
+  <g transform="translate(688,826)" class="bg-icon" style="opacity:0.35"><path d="M3 8l11-6 11 6v12l-11 6-11-6z"/><path d="M3 8l11 6 11-6"/><line x1="14" y1="14" x2="14" y2="26"/></g>
+  <g transform="translate(1186,765)" class="bg-icon" style="opacity:0.35"><path d="M14 2a1 1 0 0 0-1 1v1C9 5 6 8.7 6 13v5l-2 3h20l-2-3v-5c0-4.3-3-8-7-9V3a1 1 0 0 0-1-1z"/><path d="M11 24a3 3 0 0 0 6 0"/></g>
+  <g transform="translate(1388,826)" class="bg-icon" style="opacity:0.35"><path d="M14 1L2 6v5c0 7 4.7 13.5 12 15.4C21.3 24.5 26 18 26 11V6z"/></g>
+</svg>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><div class="nav-orb-mini"></div>SENTINEL</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#compare">Compare</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <button class="nav-cta">Join Waitlist</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-noise"></div>
+  <div class="hero-glow"></div>
+
+  <div class="orb-scene" id="heroOrbScene">
+    <div class="orb-halo2"></div>
+    <div class="orb-halo"></div>
+    <div class="orb" id="heroOrb">
+      <div class="orb-eyes">
+        <div class="orb-eye" id="eyeL"></div>
+        <div class="orb-eye" id="eyeR"></div>
+      </div>
+    </div>
+    <div class="orb-status" id="heroOrbStatus">Monitoring · Secure</div>
+  </div>
+
+  <p class="hero-eyebrow">AI-Native Home Security</p>
+  <h1>Your home knows<br><span class="line2">who belongs.</span></h1>
+  <p>Not a camera. Not a doorbell. A protective intelligence that knows your family by name, learns your rhythms, and acts — so you never have to.</p>
+  <div class="hero-ctas">
+    <button class="btn-fill">Join the Waitlist</button>
+    <button class="btn-outline">See How It Works</button>
+  </div>
+  <p class="hero-sub">Austin, TX closed beta · 100 households · Free Sentinel Pro included</p>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>&gt;95%</strong> face recognition accuracy</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>80%+</strong> fewer irrelevant alerts</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>Raw video never leaves your device</strong></span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>&lt;2s</strong> voice response time</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>&lt;90s</strong> emergency escalation</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Works with <strong>HomeKit, Google Home, Alexa</strong></span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Knows your family by <strong>name</strong></span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Recognizes <strong>UPS, FedEx, Amazon</strong> on sight</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Built-in <strong>edge AI chip</strong> · on-device processing</span></div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>&gt;95%</strong> face recognition accuracy</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>80%+</strong> fewer irrelevant alerts</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>Raw video never leaves your device</strong></span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>&lt;2s</strong> voice response time</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span><strong>&lt;90s</strong> emergency escalation</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Works with <strong>HomeKit, Google Home, Alexa</strong></span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Knows your family by <strong>name</strong></span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Recognizes <strong>UPS, FedEx, Amazon</strong> on sight</span></div>
+    <div class="ticker-item"><div class="ticker-dot"></div><span>Built-in <strong>edge AI chip</strong> · on-device processing</span></div>
+  </div>
+</div>
+
+<!-- PAIN SECTION -->
+<section>
+<div class="wrap section fade-up">
+  <p class="label">The Problem</p>
+  <h2 class="big">Alert fatigue killed<br>your security camera.</h2>
+  <p class="sub">68% of smart camera users stop engaging with notifications within 3 months. Not because they stopped caring — because the camera never learned to.</p>
+
+  <div class="pain-grid" style="margin-top:52px">
+    <div class="pain-side">
+      <div class="pain-tag bad">⚠ Traditional Cameras</div>
+      <h3>Everything is an alert.</h3>
+      <p class="desc">Your phone, right now:</p>
+      <div class="notif-flood">
+        <div class="notif-stream" id="notifStream">
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">now</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Backyard</div></div><div class="notif-time">1m</div></div>
+          <div class="notif-item"><div class="notif-app-icon wapp">💬</div><div class="notif-text"><div class="notif-title">WhatsApp</div><div class="notif-body">Mum: Did you see this? 🔔🔔</div></div><div class="notif-time">2m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">3m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Side Gate</div></div><div class="notif-time">4m</div></div>
+          <div class="notif-item"><div class="notif-app-icon mail">✉️</div><div class="notif-text"><div class="notif-title">Gmail</div><div class="notif-body">Buried under camera alerts...</div></div><div class="notif-time">5m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">6m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Backyard</div></div><div class="notif-time">7m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">8m</div></div>
+          <!-- duplicate for seamless loop -->
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">now</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Backyard</div></div><div class="notif-time">1m</div></div>
+          <div class="notif-item"><div class="notif-app-icon wapp">💬</div><div class="notif-text"><div class="notif-title">WhatsApp</div><div class="notif-body">Mum: Did you see this? 🔔🔔</div></div><div class="notif-time">2m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">3m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Side Gate</div></div><div class="notif-time">4m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">6m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Backyard</div></div><div class="notif-time">7m</div></div>
+          <div class="notif-item"><div class="notif-app-icon ring">🔔</div><div class="notif-text"><div class="notif-title">SimpliSafe</div><div class="notif-body">Motion detected · Front Door</div></div><div class="notif-time">8m</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="pain-side">
+      <div class="pain-tag good">✦ Sentinel</div>
+      <h3>Only what matters.</h3>
+      <p class="desc">Your phone with Sentinel:</p>
+      <div class="sentinel-log" id="sentinelLog"></div>
+      <div class="presence-card">
+        <div class="presence-title">Home right now</div>
+        <div class="p-row"><div class="p-led home"></div><div class="p-name">Emma</div><div class="p-meta">Home since 3:47 PM</div></div>
+        <div class="p-row"><div class="p-led home"></div><div class="p-name">Michael</div><div class="p-meta">Home since 6:12 PM</div></div>
+        <div class="p-row"><div class="p-led away"></div><div class="p-name">Jake</div><div class="p-meta">Left at 8:05 AM</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ORB STATES DEMO -->
+<section class="demo-section" id="how">
+<div class="wrap">
+  <p class="label fade-up">The Intelligence</p>
+  <h2 class="big fade-up">Sentinel thinks in states.<br>Not just motion.</h2>
+  <p class="sub fade-up">Click each state to see how Sentinel reads and responds to your home — calmly, intelligently, and without waking you up for the mailman.</p>
+
+  <div class="demo-grid">
+    <div class="demo-orb-wrap fade-up">
+      <div class="demo-orb-scene" id="demoScene">
+        <div class="demo-orb-halo2"></div>
+        <div class="demo-orb-halo"></div>
+        <div class="demo-orb" id="demoOrb">
+          <div class="demo-eyes">
+            <div class="demo-eye" id="demoEyeL"></div>
+            <div class="demo-eye" id="demoEyeR"></div>
+          </div>
+        </div>
+      </div>
+      <div id="demoVoiceLine" style="font-size:14px;color:var(--t2);font-style:italic;text-align:center;max-width:260px;min-height:44px;line-height:1.6;transition:opacity .4s">
+        "Your home is secure."
+      </div>
+    </div>
+
+    <div class="state-controls fade-up">
+      <button class="state-btn active" id="btn-idle" onclick="setDemoState('idle')">
+        <div class="state-indicator" style="background:var(--accent);box-shadow:0 0 8px var(--accent-glow)"></div>
+        <div class="state-btn-text">
+          <div class="state-btn-title">Idle · Monitoring</div>
+          <div class="state-btn-sub">"Your home is secure."</div>
+        </div>
+      </button>
+      <button class="state-btn s-family-btn" id="btn-family" onclick="setDemoState('family')">
+        <div class="state-indicator" style="background:var(--green);box-shadow:0 0 8px rgba(0,255,135,.4)"></div>
+        <div class="state-btn-text">
+          <div class="state-btn-title">Family member detected</div>
+          <div class="state-btn-sub">"Emma just got home. Front door, 3:47 PM."</div>
+        </div>
+      </button>
+      <button class="state-btn s-unknown-btn" id="btn-unknown" onclick="setDemoState('unknown')">
+        <div class="state-indicator" style="background:var(--orange);box-shadow:0 0 8px rgba(255,138,61,.4)"></div>
+        <div class="state-btn-text">
+          <div class="state-btn-title">Unknown person detected</div>
+          <div class="state-btn-sub">"Unknown person at the front door. They've been there two minutes."</div>
+        </div>
+      </button>
+      <button class="state-btn s-threat-btn" id="btn-threat" onclick="setDemoState('threat')">
+        <div class="state-indicator" style="background:var(--red);box-shadow:0 0 8px rgba(255,51,87,.4)"></div>
+        <div class="state-btn-text">
+          <div class="state-btn-title">Threat detected</div>
+          <div class="state-btn-sub">"Possible break-in detected. 60 seconds to cancel."</div>
+        </div>
+      </button>
+      <button class="state-btn" id="btn-privacy" onclick="setDemoState('privacy')">
+        <div class="state-indicator" style="background:var(--t3)"></div>
+        <div class="state-btn-text">
+          <div class="state-btn-title">Privacy mode</div>
+          <div class="state-btn-sub">"Privacy mode on. I won't resume until you tell me to."</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- COMPARE -->
+<section class="compare-section" id="compare">
+<div class="wrap section">
+  <p class="label fade-up">Comparison</p>
+  <h2 class="big fade-up">Other cameras tell you something moved.<br>Sentinel tells you who.</h2>
+
+  <div class="compare-layout fade-up">
+    <div>
+      <p style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:16px">SimpliSafe &amp; Arlo</p>
+      <table class="compare-table">
+        <thead>
+          <tr><th>Capability</th><th>SimpliSafe</th><th>Arlo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Knows your household by name</td><td><span class="xmk">✗</span></td><td><span class="pmk">~</span></td></tr>
+          <tr><td>Silent family arrivals</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>"Who's home right now?"</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>Carrier recognition (UPS/FedEx/Amazon)</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>Learns your household rhythms</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>Acts autonomously on threats</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>Locks doors on break-in</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>Raw video stays on-device</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+          <tr><td>Conversational AI voice interface</td><td><span class="xmk">✗</span></td><td><span class="xmk">✗</span></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:20px;font-size:13px;color:var(--t3);line-height:1.6;font-style:italic">"I stopped checking my camera app after two weeks. It was just the mailman, every time."</p>
+    </div>
+
+    <div>
+      <p style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;opacity:.8">Sentinel</p>
+      <div class="sentinel-chat">
+        <div class="chat-header">
+          <div class="chat-orb-mini">
+            <div class="chat-orb-eyes">
+              <div class="chat-orb-eye"></div>
+              <div class="chat-orb-eye"></div>
+            </div>
+          </div>
+          <span class="chat-name">Sentinel</span>
+          <div class="chat-live"><div class="chat-live-dot"></div>Live</div>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+<div class="wrap section">
+  <p class="label fade-up">Features</p>
+  <h2 class="big fade-up">Built around people,<br>not motion.</h2>
+  <div class="features-grid" style="margin-top:52px">
+    <div class="feat fade-up">
+      <div class="feat-icon">👤</div>
+      <h3>Household Identity</h3>
+      <p>Every person in your home has a named profile. Family arrivals are silent. Strangers get your attention. This one principle eliminates 80% of false alerts.</p>
+      <div class="feat-quote">"Emma just got home. Front door, 3:47 PM."</div>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon">📈</div>
+      <h3>Rhythm Learning</h3>
+      <p>After 2 weeks, Sentinel knows your patterns. Michael's usually home by 6:30. When he's not there by 8 PM on a Tuesday, Sentinel notices.</p>
+      <div class="feat-quote">"Michael isn't home yet. It's 8:15. Just flagging."</div>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon">🚨</div>
+      <h3>Autonomous Response</h3>
+      <p>60-second cancel window. No response? Sentinel contacts your monitoring center, triggers all lights, sounds the exterior alarm, and locks the doors.</p>
+      <div class="feat-quote">"Possible break-in at back door. 60 seconds to cancel or I'm calling it in."</div>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon">📦</div>
+      <h3>Carrier Recognition</h3>
+      <p>Sentinel recognizes UPS, FedEx, USPS, and Amazon on sight — uniform, vehicle, and behavior. Deliveries are logged silently. Package sitting for 2+ hours while you're away? Then you hear about it.</p>
+      <div class="feat-quote">"That's the Amazon driver — third time this week. Package is on the porch."</div>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon">🔇</div>
+      <h3>Privacy Mode</h3>
+      <p>One command. "Hey Sentinel, stop watching." Everything pauses. Smoke and glass break detection stay active. Your home, your rules.</p>
+      <div class="feat-quote">"Privacy mode on. I'll stay off until you tell me otherwise."</div>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon">🔒</div>
+      <h3>Privacy Architecture</h3>
+      <p>The AI chip on the camera extracts a mathematical fingerprint. Only that — never raw video — is sent to the cloud. We never see your family.</p>
+      <div class="feat-quote">"Only a fingerprint leaves your home. Raw video never does."</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- GETS SMARTER -->
+<section class="smarter-section">
+<div class="wrap">
+  <p class="label fade-up">Household Memory</p>
+  <h2 class="big fade-up">Gets smarter every week.<br>Irreplaceable over time.</h2>
+  <p class="sub fade-up">Sentinel builds a living model of your household — not just faces, but rhythms, relationships, and context. The longer you use it, the more it knows.</p>
+
+  <div class="smarter-timeline fade-up">
+    <div class="smarter-phase">
+      <div class="smarter-tag">Week 1–2</div>
+      <h3>Learning your household</h3>
+      <p>Sentinel enrolls your family, learns your cameras' coverage, and starts building a baseline of who comes and goes.</p>
+      <div class="s-quote">"I'm still learning your household's routine. I'll flag anything unusual in the meantime."</div>
+    </div>
+    <div class="smarter-phase">
+      <div class="smarter-tag">Week 3–4</div>
+      <h3>Establishing patterns</h3>
+      <p>Confident arrival and departure windows emerge. Recurring visitors get named when you tell Sentinel who they are.</p>
+      <div class="s-quote">"The motion at the back gate is the neighbor's cat. I've seen it fourteen times. I'm not going to keep logging it."</div>
+    </div>
+    <div class="smarter-phase">
+      <div class="smarter-tag">Month 2+</div>
+      <h3>Fully calibrated</h3>
+      <p>Sentinel proactively flags deviations from established rhythms — absences, unusual vehicles, new recurring visitors.</p>
+      <div class="s-quote">"Emma didn't come home at her usual time. She left at 8:05 AM and I haven't seen her since. It's 7:30 PM."</div>
+    </div>
+  </div>
+
+  <div class="moat-note fade-up">
+    <div class="moat-icon">🔐</div>
+    <div class="moat-text">
+      <h4>Your data stays yours — and stays valuable</h4>
+      <p>Every week of Sentinel usage deepens your household model: more accurate face recognition, more reliable rhythm patterns, a richer visitor history. This intelligence is specific to <em>your home</em> — no competitor can replicate or transfer it. The product gets more valuable the longer you use it.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+<div class="wrap section fade-up">
+  <p class="label">Pricing</p>
+  <h2 class="big">Simple hardware.<br>Smarter every month.</h2>
+
+  <p style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-top:48px;margin-bottom:0">Hardware</p>
+  <div class="hw-grid">
+    <div class="hw-card">
+      <div class="hw-icon">📷</div>
+      <div class="hw-name">Single Camera</div>
+      <div class="hw-desc">4K · Color night vision · Edge NPU · IP67 weatherproof</div>
+      <div class="hw-price">$179</div>
+      <div class="hw-note">Subscription sold separately</div>
+    </div>
+    <div class="hw-card featured">
+      <div class="hw-badge">Best Value</div>
+      <div class="hw-icon">📷</div>
+      <div class="hw-name">Camera + 1yr Home</div>
+      <div class="hw-desc">Hardware + full AI, 12 months included upfront</div>
+      <div class="hw-price">$249</div>
+      <div class="hw-note">Save $90 vs paying monthly</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-icon">📷📷</div>
+      <div class="hw-name">2-Camera Pack</div>
+      <div class="hw-desc">Front door + backyard. Starter kit.</div>
+      <div class="hw-price">$299</div>
+      <div class="hw-note">$50 off vs two singles</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-icon">🏠</div>
+      <div class="hw-name">4-Camera Pack</div>
+      <div class="hw-desc">Full home coverage. Every angle.</div>
+      <div class="hw-price">$549</div>
+      <div class="hw-note">$167 off vs four singles</div>
+    </div>
+  </div>
+
+  <p style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-top:56px;margin-bottom:0">AI Subscription</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-tier">Free</div>
+      <div class="price-num">$0</div>
+      <div class="price-period">Hardware only · No AI</div>
+      <div class="price-divider"></div>
+      <ul class="price-list">
+        <li><span class="chk">✓</span> 1 camera, local storage only</li>
+        <li><span class="chk">✓</span> Basic motion alerts</li>
+        <li><span class="chk">✓</span> 7-day cloud clip backup</li>
+        <li><span class="xmk">✗</span> No identity tracking</li>
+        <li><span class="xmk">✗</span> No AI agent</li>
+        <li><span class="xmk">✗</span> No IoT integration</li>
+      </ul>
+      <button class="price-btn ghost">Get Started</button>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">Most Popular</div>
+      <div class="price-tier">Home</div>
+      <div class="price-num">$19<span>.99/mo</span></div>
+      <div class="price-period">or $179/yr · save 25%</div>
+      <div class="price-divider"></div>
+      <ul class="price-list">
+        <li><span class="chk">✓</span> Up to 4 cameras</li>
+        <li><span class="chk">✓</span> Full AI agent + voice</li>
+        <li><span class="chk">✓</span> Identity tracking (6 members)</li>
+        <li><span class="chk">✓</span> Zero-noise smart notifications</li>
+        <li><span class="chk">✓</span> HomeKit, Google Home, Alexa</li>
+        <li><span class="chk">✓</span> Daily brief + rhythm learning</li>
+        <li><span class="chk">✓</span> 30-day cloud clip retention</li>
+      </ul>
+      <button class="price-btn solid">Join Waitlist</button>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">Pro</div>
+      <div class="price-num">$39<span>.99/mo</span></div>
+      <div class="price-period">or $359/yr · save 25%</div>
+      <div class="price-divider"></div>
+      <ul class="price-list">
+        <li><span class="chk">✓</span> Everything in Home</li>
+        <li><span class="chk">✓</span> Unlimited cameras</li>
+        <li><span class="chk">✓</span> 24/7 professional monitoring</li>
+        <li><span class="chk">✓</span> Unlimited household members</li>
+        <li><span class="chk">✓</span> 90-day clip retention</li>
+        <li><span class="chk">✓</span> Multi-camera scene synthesis</li>
+        <li><span class="chk">✓</span> Live camera sharing with 911</li>
+      </ul>
+      <button class="price-btn ghost">Join Waitlist</button>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <h2>Stop watching.<br>Start trusting.</h2>
+  <p>Join the closed beta. 100 households in Austin, TX. Free Sentinel Pro during the entire beta period.</p>
+  <div class="email-form">
+    <input class="email-in" type="email" placeholder="your@email.com"/>
+    <button class="btn-fill">Request Access</button>
+  </div>
+  <p class="cta-note">No spam. Beta invites sent in order of signup.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand"><div class="nav-orb-mini"></div>SENTINEL</div>
+  <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+  <div class="footer-copy">© 2026 Sentinel Inc.</div>
+</footer>
+
+<script>
+// ── BLINK ENGINE ──
+function doBlink(eyes){
+  eyes.forEach(e=>e.classList.add('blink'));
+  setTimeout(()=>eyes.forEach(e=>e.classList.remove('blink')), 140);
+}
+function blinkThenChange(eyes, cb){
+  eyes.forEach(e=>e.classList.add('blink'));
+  setTimeout(cb, 70);
+  setTimeout(()=>eyes.forEach(e=>e.classList.remove('blink')), 160);
+}
+function scheduleRandomBlink(eyes){
+  const delay = 2200 + Math.random()*4800;
+  setTimeout(()=>{
+    doBlink(eyes);
+    if(Math.random() > 0.72) setTimeout(()=>doBlink(eyes), 300);
+    scheduleRandomBlink(eyes);
+  }, delay);
+}
+
+const heroEyes  = [document.getElementById('eyeL'), document.getElementById('eyeR')];
+const demoEyesL = document.getElementById('demoEyeL');
+const demoEyesR = document.getElementById('demoEyeR');
+scheduleRandomBlink(heroEyes);
+scheduleRandomBlink([demoEyesL, demoEyesR]);
+
+// ── HERO ORB AUTO-CYCLE ──
+const heroOrb    = document.getElementById('heroOrb');
+const heroScene  = document.getElementById('heroOrbScene');
+const heroStatus = document.getElementById('heroOrbStatus');
+const heroCycle  = ['idle','family','idle','idle','unknown','idle','threat','idle','privacy','idle','idle'];
+const heroLabels = {idle:'Monitoring · Secure',family:'Family detected',unknown:'Unknown person',threat:'Threat detected',privacy:'Privacy mode'};
+const heroColors = {idle:'var(--accent)',family:'var(--green)',unknown:'var(--orange)',threat:'var(--red)',privacy:'var(--t3)'};
+const heroDurations = {idle:3200,family:2200,unknown:2400,threat:2600,privacy:1800};
+let hi = 0;
+function cycleHero(){
+  hi = (hi+1) % heroCycle.length;
+  const s = heroCycle[hi];
+  blinkThenChange(heroEyes, ()=>{
+    heroOrb.className   = 'orb'+(s!=='idle'?' state-'+s:'');
+    heroScene.className = 'orb-scene'+(s!=='idle'?' state-'+s:'');
+    heroStatus.textContent = heroLabels[s];
+    heroStatus.style.color = heroColors[s];
+  });
+  setTimeout(cycleHero, heroDurations[s]);
+}
+setTimeout(cycleHero, 3500);
+
+// ── DEMO ORB STATE ──
+const demoOrb   = document.getElementById('demoOrb');
+const demoScene = document.getElementById('demoScene');
+const demoVoice = document.getElementById('demoVoiceLine');
+const voiceLines = {
+  idle:   '"Your home is secure. Emma and Michael are home."',
+  family: '"Emma just got home. Front door, 3:47 PM."',
+  unknown:'"Unknown person at the front door. They\'ve been there two minutes."',
+  threat: '"Possible break-in detected — back door. Starting 60-second response window."',
+  privacy:'"Privacy mode on. All cameras paused. I\'ll stay off until you tell me otherwise."'
+};
+function setDemoState(s){
+  document.querySelectorAll('.state-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-'+s).classList.add('active');
+  blinkThenChange([demoEyesL, demoEyesR], ()=>{
+    demoOrb.className   = 'demo-orb'+(s!=='idle'?' s-'+s:'');
+    demoScene.className = 'demo-orb-scene'+(s!=='idle'?' s-'+s:'');
+  });
+  demoVoice.style.opacity = '0';
+  setTimeout(()=>{ demoVoice.textContent = voiceLines[s]; demoVoice.style.opacity='1'; }, 220);
+}
+
+// ── SENTINEL LOG ANIMATION (fixed-height timeline) ──
+const sLog = document.getElementById('sentinelLog');
+const sEvents = [
+  {cls:'silent', dot:'',       label:'<strong>Emma</strong> arrived home · 3:47 PM',    chip:'silent',   cc:'silent'},
+  {cls:'silent', dot:'',       label:'<strong>Michael</strong> arrived home · 6:12 PM', chip:'silent',   cc:'silent'},
+  {cls:'soft',   dot:'amber',  label:'<strong>FedEx</strong> delivery · 10:15 AM',       chip:'logged',   cc:'soft'},
+  {cls:'warn',   dot:'orange', label:'<strong>Unknown person</strong> · front door',     chip:'review',   cc:'warn'},
+  {cls:'silent', dot:'',       label:'<strong>Jake</strong> arrived home · 3:45 PM',     chip:'silent',   cc:'silent'},
+  {cls:'soft',   dot:'amber',  label:'Package on porch 2+ hrs · still there',            chip:'heads up', cc:'soft'},
+  {cls:'silent', dot:'',       label:'<strong>Emma</strong> left · 8:02 AM',             chip:'silent',   cc:'silent'},
+];
+const S_MAX = 4;
+let sei = 0, sLogStarted = false;
+
+function addSentinelRow(){
+  if(!sLog) return;
+  if(sei >= sEvents.length){
+    sei = 0;
+    const all = sLog.querySelectorAll('.s-row');
+    all.forEach(r=>{ r.style.opacity='0'; r.style.transform='translateY(-8px)'; });
+    setTimeout(()=>{ sLog.innerHTML=''; setTimeout(addSentinelRow, 400); }, 500);
+    return;
+  }
+  const ev = sEvents[sei];
+  const dotStyle = ev.dot==='amber' ? 'background:var(--amber)' : ev.dot==='orange' ? 'background:var(--orange)' : '';
+  const rows = sLog.querySelectorAll('.s-row');
+  if(rows.length >= S_MAX){
+    const oldest = rows[0];
+    oldest.style.opacity = '0';
+    oldest.style.transform = 'translateY(-8px)';
+    setTimeout(()=>{ if(oldest.parentNode) oldest.remove(); }, 450);
+  }
+  const row = document.createElement('div');
+  row.className = `s-row ${ev.cls}`;
+  row.style.cssText = 'opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s ease';
+  row.innerHTML = `<div class="s-dot" style="${dotStyle}"></div><div class="s-label">${ev.label}</div><div class="s-chip ${ev.cc}">${ev.chip}</div>`;
+  sLog.appendChild(row);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    row.style.opacity='1'; row.style.transform='translateY(0)';
+  }));
+  sei++;
+  setTimeout(addSentinelRow, 1600);
+}
+const sLogObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting && !sLogStarted){ sLogStarted=true; setTimeout(addSentinelRow,600); }});
+},{threshold:0.4});
+if(sLog) sLogObs.observe(sLog);
+
+// ── SENTINEL CHAT ANIMATION ──
+const chatBody = document.getElementById('chatBody');
+const chatScript = [
+  { type:'sentinel', color:'green',  text:'Emma just got home. Front door, 3:47 PM.', meta:'3:47 PM' },
+  { type:'user',                      text:'Hey Sentinel, who else is home?',           meta:'3:48 PM' },
+  { type:'sentinel', color:'cyan',   text:'Just Emma right now. Michael usually gets back around 6:30. Jake left at 8:05 this morning.', meta:'3:48 PM' },
+  { type:'sentinel', color:'cyan',   text:'FedEx delivery at 10:15 AM — your package has been on the porch for a few hours.', meta:'4:02 PM' },
+  { type:'sentinel', color:'',       text:'Michael isn\'t home yet. He\'s usually back by 6:30. It\'s 8:15. Just flagging.', meta:'8:15 PM' },
+  { type:'user',                      text:'He\'s working late tonight.',                meta:'8:17 PM' },
+  { type:'sentinel', color:'cyan',   text:'Got it. I\'ll update his expected window for tonight.', meta:'8:17 PM' },
+  { type:'sentinel', color:'orange', text:'Unknown person at your front door. They\'ve been standing there for two minutes. Do you want me to sound the exterior alarm?', meta:'11:04 PM' },
+  { type:'user',                      text:'Who is it?',                                  meta:'11:04 PM' },
+  { type:'sentinel', color:'orange', text:'I don\'t recognise them. Confidence 0.41. They haven\'t knocked. Home is currently empty.', meta:'11:04 PM' },
+  { type:'sentinel', color:'green',  text:'They\'ve left. I\'ve saved a clip. No further action taken.', meta:'11:06 PM' },
+  { type:'sentinel', color:'green',  text:'Everyone\'s in for the night. Your home is secure.', meta:'11:41 PM' },
+];
+let ci = 0, chatRunning = false;
+function clearChat(){ chatBody.innerHTML = ''; }
+function addTyping(){
+  const el = document.createElement('div');
+  el.className = 'chat-msg typing-indicator';
+  el.id = 'typingEl';
+  el.innerHTML = `<div class="chat-msg-orb"></div><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  chatBody.appendChild(el);
+  chatBody.scrollTop = chatBody.scrollHeight;
+  return el;
+}
+function removeTyping(){
+  const el = document.getElementById('typingEl');
+  if(el) el.remove();
+}
+function addMessage(msg){
+  const el = document.createElement('div');
+  el.className = 'chat-msg' + (msg.type==='user' ? ' user' : '');
+  if(msg.type === 'sentinel'){
+    el.innerHTML = `<div class="chat-msg-orb ${msg.color||''}"></div><div><div class="chat-bubble ${msg.color||''}">${msg.text}</div><div class="chat-meta">${msg.meta}</div></div>`;
+  } else {
+    el.innerHTML = `<div><div class="chat-bubble">${msg.text}</div><div class="chat-meta" style="text-align:right">${msg.meta}</div></div>`;
+  }
+  chatBody.appendChild(el);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+function nextChatMessage(){
+  if(ci >= chatScript.length){
+    setTimeout(()=>{ clearChat(); ci=0; setTimeout(nextChatMessage, 800); }, 3500);
+    return;
+  }
+  const msg = chatScript[ci];
+  const thinkTime = msg.type==='sentinel' ? 900 + Math.random()*600 : 400;
+  const readTime  = msg.type==='sentinel' ? 1400 + msg.text.length * 28 : 1000 + msg.text.length * 22;
+  if(msg.type === 'sentinel'){
+    setTimeout(()=>{
+      addTyping();
+      setTimeout(()=>{ removeTyping(); addMessage(msg); ci++; setTimeout(nextChatMessage, readTime); }, thinkTime);
+    }, 200);
+  } else {
+    setTimeout(()=>{ addMessage(msg); ci++; setTimeout(nextChatMessage, readTime); }, 300);
+  }
+}
+const chatObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && !chatRunning){ chatRunning = true; setTimeout(nextChatMessage, 600); }
+  });
+},{threshold:0.3});
+if(chatBody) chatObserver.observe(chatBody);
+
+// ── SCROLL FADE-IN ──
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.fade-up').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
