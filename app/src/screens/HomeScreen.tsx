@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   Animated, StatusBar, Modal, Pressable, Dimensions,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { CamVideoPlayer } from '../components/CamVideoPlayer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { useStore } from '../store';
 import { Orb } from '../components/Orb';
 import { C, getColors, getStateColor, getEventColor, STATE_LABEL, EVENT_COLOR, EVENT_BG, EVENT_ICON } from '../theme';
 import { SentinelEvent } from '../types';
-import { getClipForEvent, buildCamHtml } from '../data/videoClips';
+import { getVideoForEvent } from '../data/videoClips';
 
 const relTime = (d: Date): string => {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -62,7 +62,7 @@ const EventDetailModal: React.FC<{ event: SentinelEvent | null; onClose: () => v
   const icon     = EVENT_ICON[event.type]  ?? 'ellipse';
   const meta     = fakeEventMeta(event);
   const sevColor = event.severity === 'alert' ? C.red : event.severity === 'warning' ? C.orange : C.accent;
-  const clip     = getClipForEvent(event);
+  const videoSrc = getVideoForEvent(event);
 
   return (
     <Modal transparent visible animationType="none" onRequestClose={onClose}>
@@ -78,17 +78,11 @@ const EventDetailModal: React.FC<{ event: SentinelEvent | null; onClose: () => v
               <Text style={[ms.sevText, { color: sevColor }]}>{event.severity.toUpperCase()}</Text>
             </View>
           </View>
-          <View style={ms.thumbnailWrap}>
-            <WebView
-              source={{ html: buildCamHtml(clip.id, event.camera, event.camera) }}
-              style={ms.thumbnail}
-              allowsInlineMediaPlayback
-              mediaPlaybackRequiresUserAction={false}
-              javaScriptEnabled
-              scrollEnabled={false}
-              bounces={false}
-            />
-          </View>
+          <CamVideoPlayer
+            source={videoSrc}
+            camName={event.camera}
+            location={event.time.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          />
           <Text style={ms.title}>{event.title}</Text>
           <Text style={ms.body}>{event.body}</Text>
           <View style={ms.grid}>
@@ -920,12 +914,6 @@ const ms = StyleSheet.create({
     padding: 24, paddingBottom: 44,
     borderWidth: 1, borderColor: C.border2,
   },
-  thumbnailWrap: {
-    width: '100%', height: 210, borderRadius: 16, overflow: 'hidden',
-    marginBottom: 20, backgroundColor: '#000',
-  },
-  thumbnail: { flex: 1 },
-
   handle:    { width: 38, height: 4, borderRadius: 2, backgroundColor: C.s4, alignSelf: 'center', marginBottom: 22 },
   header:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
   closeBtn:  { width: 40, height: 40, borderRadius: 20, backgroundColor: C.s3, alignItems: 'center', justifyContent: 'center' },
