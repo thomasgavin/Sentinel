@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
-  Animated, ListRenderItem, ScrollView,
+  Animated, ListRenderItem, ScrollView, Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,16 @@ import { useStore } from '../store';
 import { ChatMessage } from '../types';
 import { getSentinelResponse } from '../engine';
 import { C, getColors, getStateColor, ORB_GRADIENT } from '../theme';
+import { watchUrl } from '../data/videoClips';
+
+// clip IDs for unknown person vs threat messages
+const CLIP_UNKNOWN = ['JOKBzzpoWnU', 'NtuKgCMqssY', 'JUfIpZCYquY', 'rqfMuInKHd0'];
+const CLIP_THREAT  = ['JdU_xmAkbMo', 'WAIwZI-X7m4', 'VQqtS995yYo', 'xjQzg1QAlXs'];
+function pickClip(pool: string[], seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return pool[h % pool.length];
+}
 import { LinearGradient } from 'expo-linear-gradient';
 
 const fmt = (d: Date) =>
@@ -139,7 +149,14 @@ const MessageItem: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
           )}
           <Text style={[s.textSentinel, { color: col.t2 }, isAlert && { color: col.text }]}>{msg.text}</Text>
           {msg.hasClip && (
-            <TouchableOpacity style={[s.clipBtn, { borderColor: `${accent}50`, backgroundColor: `${accent}12` }]} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={[s.clipBtn, { borderColor: `${accent}50`, backgroundColor: `${accent}12` }]}
+              activeOpacity={0.7}
+              onPress={() => {
+                const pool = msg.color === 'red' ? CLIP_THREAT : CLIP_UNKNOWN;
+                Linking.openURL(watchUrl(pickClip(pool, msg.id)));
+              }}
+            >
               <Ionicons name="play-circle" size={14} color={accent} />
               <Text style={[s.clipBtnText, { color: accent }]}>View clip</Text>
               <Ionicons name="arrow-forward" size={12} color={accent} style={{ marginLeft: 'auto' }} />
