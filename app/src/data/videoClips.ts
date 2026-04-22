@@ -91,3 +91,55 @@ export const thumbnailUrl = (videoId: string) =>
 
 export const watchUrl = (videoId: string) =>
   `https://www.youtube.com/watch?v=${videoId}`;
+
+export function buildCamHtml(videoId: string, camName: string, location: string): string {
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0&modestbranding=1&loop=1&playlist=${videoId}`;
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;width:100vw;height:100vh}
+iframe{width:100%;height:100%;border:none;display:block}
+.ov{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:10}
+.scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)}
+.vign{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.55) 100%)}
+.top{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center}
+.live{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.18);border-radius:4px;padding:3px 8px}
+.dot{width:7px;height:7px;border-radius:50%;background:#ff3357;animation:blink 1.1s infinite}
+.lt{color:#fff;font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.1em}
+.ts{color:rgba(255,255,255,0.75);font-family:monospace;font-size:10px;background:rgba(0,0,0,0.45);padding:3px 7px;border-radius:3px}
+.bot{position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-end}
+.cn{color:rgba(255,255,255,0.82);font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,1)}
+.loc{color:rgba(255,255,255,0.5);font-family:monospace;font-size:10px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+</style>
+</head>
+<body>
+<iframe src="${embedUrl}" allow="autoplay;fullscreen" allowfullscreen></iframe>
+<div class="ov">
+  <div class="scan"></div>
+  <div class="vign"></div>
+  <div class="top">
+    <div class="live"><div class="dot"></div><span class="lt">LIVE</span></div>
+    <div class="ts" id="ts"></div>
+  </div>
+  <div class="bot">
+    <span class="cn">${camName}</span>
+    <span class="loc">${location}</span>
+  </div>
+</div>
+<script>
+function tick(){
+  var n=new Date();
+  var p=function(x){return String(x).padStart(2,'0')};
+  document.getElementById('ts').textContent=
+    p(n.getMonth()+1)+'/'+p(n.getDate())+'/'+n.getFullYear()+' '+
+    p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>`;
+}

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  Animated, StatusBar, Modal, Pressable, Dimensions, Image, Linking,
+  Animated, StatusBar, Modal, Pressable, Dimensions,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +11,7 @@ import { useStore } from '../store';
 import { Orb } from '../components/Orb';
 import { C, getColors, getStateColor, getEventColor, STATE_LABEL, EVENT_COLOR, EVENT_BG, EVENT_ICON } from '../theme';
 import { SentinelEvent } from '../types';
-import { getClipForEvent, thumbnailUrl, watchUrl } from '../data/videoClips';
+import { getClipForEvent, buildCamHtml } from '../data/videoClips';
 
 const relTime = (d: Date): string => {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -77,22 +78,17 @@ const EventDetailModal: React.FC<{ event: SentinelEvent | null; onClose: () => v
               <Text style={[ms.sevText, { color: sevColor }]}>{event.severity.toUpperCase()}</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={ms.thumbnailWrap}
-            onPress={() => Linking.openURL(watchUrl(clip.id))}
-            activeOpacity={0.9}
-          >
-            <Image source={{ uri: thumbnailUrl(clip.id) }} style={ms.thumbnail} resizeMode="cover" />
-            <View style={ms.thumbnailOverlay}>
-              <View style={[ms.playCircle, { borderColor: `${color}cc`, backgroundColor: `${color}22` }]}>
-                <Ionicons name="play" size={22} color={color} />
-              </View>
-            </View>
-            <View style={ms.clipSourceRow}>
-              <Ionicons name="videocam" size={10} color="rgba(255,255,255,0.55)" />
-              <Text style={ms.clipSource}>{clip.label}</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={ms.thumbnailWrap}>
+            <WebView
+              source={{ html: buildCamHtml(clip.id, event.camera, event.camera) }}
+              style={ms.thumbnail}
+              allowsInlineMediaPlayback
+              mediaPlaybackRequiresUserAction={false}
+              javaScriptEnabled
+              scrollEnabled={false}
+              bounces={false}
+            />
+          </View>
           <Text style={ms.title}>{event.title}</Text>
           <Text style={ms.body}>{event.body}</Text>
           <View style={ms.grid}>
@@ -114,10 +110,7 @@ const EventDetailModal: React.FC<{ event: SentinelEvent | null; onClose: () => v
             ))}
           </View>
           <View style={ms.actions}>
-            <TouchableOpacity
-              style={[ms.primaryBtn, { backgroundColor: `${color}1a`, borderColor: `${color}50` }]}
-              onPress={() => Linking.openURL(watchUrl(clip.id))}
-            >
+            <TouchableOpacity style={[ms.primaryBtn, { backgroundColor: `${color}1a`, borderColor: `${color}50` }]}>
               <Ionicons name="play" size={16} color={color} />
               <Text style={[ms.primaryBtnText, { color }]}>Watch Footage</Text>
             </TouchableOpacity>
@@ -928,25 +921,10 @@ const ms = StyleSheet.create({
     borderWidth: 1, borderColor: C.border2,
   },
   thumbnailWrap: {
-    width: '100%', height: 190, borderRadius: 16, overflow: 'hidden',
-    marginBottom: 20, backgroundColor: C.s2,
+    width: '100%', height: 210, borderRadius: 16, overflow: 'hidden',
+    marginBottom: 20, backgroundColor: '#000',
   },
-  thumbnail:      { width: '100%', height: '100%' },
-  thumbnailOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  playCircle: {
-    width: 52, height: 52, borderRadius: 26, borderWidth: 2,
-    alignItems: 'center', justifyContent: 'center',
-    paddingLeft: 3,
-  },
-  clipSourceRow: {
-    position: 'absolute', bottom: 8, left: 10, right: 10,
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-  },
-  clipSource: { color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: '600' },
+  thumbnail: { flex: 1 },
 
   handle:    { width: 38, height: 4, borderRadius: 2, backgroundColor: C.s4, alignSelf: 'center', marginBottom: 22 },
   header:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
